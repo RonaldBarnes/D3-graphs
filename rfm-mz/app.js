@@ -41,10 +41,11 @@ let radio = {
 	R: false,
 	M: false
 	};
+// Find which button is selected:
 radio.F = d3.select("#F").property("checked");
 radio.R = d3.select("#R").property("checked");
 radio.M = d3.select("#M").property("checked");
-
+// If no button selected, choose a default:
 if (radio.F === false && radio.M === false && radio.R === false) {
 	// Initialize RFM radio button default selector to Frequency:
 	d3.select("#F")
@@ -52,7 +53,7 @@ if (radio.F === false && radio.M === false && radio.R === false) {
 		;
 	radio.F = d3.select("#F").property("checked");
 	}
-console.log("RADIO:", radio);
+// console.log("RADIO:", radio);
 
 
 
@@ -152,18 +153,13 @@ function createSVG() {
 
 // Can't create scales until data has been fetched, hence inside block:
 function createScales() {
-	// If resized, update these:
-/*
-	width = getPageWidth();
-	height = getPageHeight();
-*/
-
 
 	xScale = d3.scaleLinear()
 		.domain( [
 			d3.max(data, d => d.score),
 			d3.min(data, d => d.score)
 			])
+		// Move range setting to inside makeGraph() so responsive:
 		.range([padding.left, width])
 		// .clamp(true)
 		;
@@ -273,7 +269,7 @@ function makeGraph() {
 			.attr("transform",
 				`translate(${barWidth / 2}, ${height + padding.top})`)
 			.attr("id", "xAxis")
-			.call(xAxis2)
+			.call(xAxis)
 		;
 	// Label xAxis
 	svg
