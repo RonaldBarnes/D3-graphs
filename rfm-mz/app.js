@@ -128,6 +128,7 @@ function createSVG() {
 // Add an SVG graphic to DOM:
 	svg = d3.select("#graph")
 		.append("svg")
+			// .attr("viewBox", "0 0 2000 1200")
 			.attr("width", width + padding.left + padding.right)
 			.attr("height", height + padding.top + padding.bottom)
 			.style("outline", "1px solid red")
@@ -178,7 +179,7 @@ function createScales() {
 		= d3.extent(data, (d) => d.numDonors);
 	// Create scale for number of donors along xAxis:
 	xScale2 = d3.scaleLinear()
-		.domain([minNumDonors, numTotalDonors]  )
+		.domain([0, numTotalDonors + maxNumDonors]  )
 		.range([padding.left, width])
 		;
 	xAxis2 = d3.axisBottom(xScale2);
@@ -233,17 +234,17 @@ d3.selectAll("input")
 // makeGraph(startYear);
 
 function makeGraph() {
+
+	let svg = d3.select("svg");
 /*
 	width = getPageWidth();
 	height = getPageHeight();
-*/
-	let svg = d3.select("svg");
 
 	svg
 		.attr("width", width + padding.left + padding.right)
 		.attr("height", height + padding.top + padding.bottom)
 		;
-
+*/
 
 	svg
 		.selectAll("rect")
@@ -251,24 +252,18 @@ function makeGraph() {
 
 		.enter()
 			.append("rect")
-//				.attr("x", d => xScale(d.score))
-				.attr("x", d => xScale2(d.numDonors))
+				.attr("x", d => xScale(d.score))
+//				.attr("x", d => xScale2(d.numDonors))
 				.attr("y", function( d) {
 					return yScale( d.totalDonated) + padding.top;
 					})
-//				.attr("width", barWidth)
-				.attr("width", d => xScale2(d.numDonors))
-/*
-				.attr("width", function(d) {
-					return xScale2(d.numDonors)
-					})
-*/
+				.attr("width", barWidth)
+//				.attr("width", d => xScale2(d.numDonors))
 				.attr("height", function(d) {
 					return height - yScale(d.totalDonated);
 					})
 				.attr("fill", (d,index) => colourScale(index))
 				.attr("stroke", "black")
-// xScale(data, (d) => d.totalDonations)
 		;
 
 
@@ -353,22 +348,6 @@ function setToolTip() {
 
 
 
-
-
-/*
-// Create colourized legend for continents:
-let legend = "";
-Array.from(continents).sort().forEach(function (c) {
-	legend += `<div style="background:${colourScale(c)}" `
-		+ `title="${continentsNames[c]}">`
-		+ `${c}: ${continentsNames[c]}</div>`;
-	console.log(`CONTINENT: ${c}=${continentsNames[c]}`)
-	});
-// console.log(`LEGEND: ${legend}`)
-d3.select("#colour-legend")
-	.html(legend)
-	;
-*/
 
 // Add Tooltip div:
 d3.select("body")
