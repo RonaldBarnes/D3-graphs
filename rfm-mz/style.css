@@ -94,16 +94,29 @@ svg {
 	left: -24px;
 	border: 12px solid transparent;
 	border-right-color: red;
-	/* offset by ½ width of border element to centre it, top: 50% is START */
+	/*
+		offset by ½ width of border element to centre it, top:
+		50% is START
+	*/
 	margin-top: -12px;
 	}
 
-/*
-Testing BS
-#xAxis-label {
-	width: 50vw;
-	background-color: yellow;
-	border: 1px solid green;
-	}
-*/
 
+/*
+	Text was illegible - too small - on mobile.
+	Set sizes larger at hiDPI:
+*/
+@media (resolution >= 2dppx) {
+	#RFM-selector {
+		font-size: 3rem;
+		}
+	#tooltip, .tooltip {
+		font-size: 3rem;
+		}
+	#xAxis-label, #yAxis-label, #title {
+		font-size: 3rem;
+		}
+	.tick > * {
+		font-size: 2rem;
+		}
+	}

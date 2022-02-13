@@ -4,19 +4,19 @@ let height = 700;
 */
 let width = getPageWidth();
 let height = getPageHeight();
-
+console.log(`WTH? WIDTH=${width} HEIGHT=${height}`);
 
 
 let padding = {
 	top: 50,
 	right: 50,
-	bottom: 50,
+	bottom: 75,
 	left: 100
 	};
 
 let barPadding = 5;
 let barWidth = 75;
-// barWidth = width / 10;
+barWidth = width / 10;
 let data = [];
 let svg;
 let xScale;
@@ -101,7 +101,7 @@ d3.queue()
 function getPageWidth() {
 	// Get width of graph <div>: same as body width:
 	let divWidth = parseInt( d3.select("#graph").style("width") );
-
+	//
 	// Shrink it to leave some space around sides and make it
 	// an even number:
 	divWidth = Math.floor( divWidth / 100 - 2) * 100;
@@ -109,11 +109,28 @@ function getPageWidth() {
 	}
 
 function getPageHeight() {
-	// Gives height=0 at initial page load (not good...):
+	// Gives height=0 at initial page load (since nothing's drawn):
 	// tmpHeight = parseInt( d3.select("#graph").style("height") );
-	// debugger;
-	tmpHeight = d3.select("html")._parents[0].scrollHeight;
-	// d3.select("body")._groups[0][0].clientHeight
+	//
+	// This doesn't shrink once bar graph drawn:
+	// tmpHeight = d3.select("html")._parents[0].scrollHeight;
+	// Again, height doesn't shrink once bars exist:
+	// let tmpHeight = d3.select("html")._parents[0].scrollHeight
+	//
+	//	let tmpHeight = d3.select("body")._groups[0][0].clientHeight
+	//	let tmpHeight = d3.select("html")._parents[0].clientHeight
+	//
+	// document.body.clientHeight = 854 (but is only 34px at load!)
+	// window.innerHeight = 997
+	// document.documentElement.clientHeight = 997
+	// window.screen.height = 1200
+	// window.screen.availHeight = 1200
+	//
+	let tmpHeight = window.innerHeight
+		|| document.documentElement.clientHeight
+		|| window.screen.availHeight
+		|| document.body.clientHeight
+		;
 	tmpHeight = Math.floor(tmpHeight / 100 - 2) * 100;
 	return tmpHeight;
 	}
@@ -138,10 +155,12 @@ function createSVG() {
 	// Add a graph title:
 	svg
 		.append("text")
+			.attr("id", "title")
 			.attr("x", width / 2 + padding.left)
 			.attr("dy", "1.0em")
 			.style("text-anchor", "middle")
-			.style("font-size", "1.5em")
+			// attr, not style, because CSS for media queries:
+			.attr("font-size", "1.5em")
 			.text("Frequency")
 		;
 	return svg
@@ -199,9 +218,11 @@ function createScales() {
 
 
 	// Some colourized bars, no real colour meaning (yet):
-	colourScale = d3.scaleOrdinal()
+//	colourScale = d3.scaleOrdinal()
+	colourScale = d3.scaleLinear()
 		.domain( d3.extent( data, (d) => d.score ))
-		.range(d3.schemeCategory10)
+//		.range(d3.schemeCategory10)
+		.range(["red", "green"]) //d3.schemeCategory10)
 		;
 	} // end createScales
 
@@ -215,15 +236,24 @@ function createScales() {
 // Assign default values to our input / radio buttons:
 d3.selectAll("input")
 	.on("change", function() {
-//		makeGraph();
+		// updateGraph();
 		})
 	;
 // For responsive design:
 // Created new .append() every resize instead of .update...
 // Look into this (later)
-// window.addEventListener("resize", makeGraph );
+window.addEventListener("resize", updateGraph );
 
 
+/*
+// DisplayPixelRatio is > 1 on hiDPI (3.x on Pixel4a Firefox)
+//	Wrote media query CSS to handle this
+d3.select("#pixel")
+	.append("text")
+	.text(window.devicePixelRatio)
+	.style("font-size", "3em")
+	;
+*/
 
 
 // Initialize graph:
@@ -232,7 +262,7 @@ d3.selectAll("input")
 function makeGraph() {
 
 	let svg = d3.select("svg");
-/*
+
 	width = getPageWidth();
 	height = getPageHeight();
 
@@ -240,7 +270,7 @@ function makeGraph() {
 		.attr("width", width + padding.left + padding.right)
 		.attr("height", height + padding.top + padding.bottom)
 		;
-*/
+
 
 	svg
 		.selectAll("rect")
@@ -258,7 +288,7 @@ function makeGraph() {
 				.attr("height", function(d) {
 					return height - yScale(d.totalDonated);
 					})
-				.attr("fill", (d,index) => colourScale(index))
+				.attr("fill", (d,index) => colourScale(d.score))
 				.attr("stroke", "black")
 		;
 
@@ -278,12 +308,10 @@ function makeGraph() {
 			.attr("width", width)
 			.attr("transform",
 				`translate(${width / 2 + padding.left}, `
-				+ `${height + 2 * padding.top})`)
+				+ `${height + padding.top + padding.bottom})`)
 			// Move UP from bottom SVG border slightly:
-			.attr("dy", "-10px")
+			.attr("dy", "-1rem")
 			.attr("text-anchor", "middle")
-			.style("border", "1px solid green")
-			.style("background", "red")
 			.text("RFM Score")
 		;
 
@@ -298,10 +326,11 @@ function makeGraph() {
 	// Label yAxis
 	svg
 		.append("text")
+			.attr("id", "yAxis-label")
 			.text("Donation Amount")
 			.attr("transform", `rotate(-90)`)
 			// Moving negative x direction == DOWN:
-			.attr("x", -(height) / 2 - padding.top - padding.bottom)
+			.attr("x", -(height) / 2 - padding.bottom)
 			.attr("dy", padding.left  / 2)
 			.attr("text-anchor", "middle")
 		;
@@ -326,6 +355,65 @@ d3.select("svg")
 	}
 	;
 
+
+// Responsive design - changes in size of window:
+function updateGraph() {
+	width = getPageWidth();
+	height = getPageHeight();
+	barWidth = width / 10 - barPadding;
+	// console.log(`WIDTH: ${width}  HEIGHT: ${height}`);
+
+	svg = d3.select("svg");
+	svg
+		.attr("width", width + padding.left + padding.right)
+		.attr("height", height + padding.top + padding.bottom)
+		;
+
+	xScale
+		.range([padding.left, width])
+		;
+	d3.select("#xAxis")
+		.attr("transform",
+			`translate(${barWidth / 2}, ${height + padding.top})`)
+		.call(xAxis)
+		;
+	d3.select("#xAxis-label")
+		.attr("transform",
+			`translate(${width / 2 + padding.left}, `
+			+ `${height + 2 * padding.top})`)
+		;
+
+	yScale
+		.range([height, padding.top])
+		;
+	d3.select("#yAxis")
+		.call(yAxis
+			.tickSize(-width + padding.left - barWidth)
+			.tickSizeOuter(0)
+			)
+		;
+	d3.select("#yAxis-label")
+		.attr("x", -(height) / 2 - padding.top - padding.bottom)
+		;
+
+	d3.select("#title")
+		.attr("x", width / 2 + padding.left)
+		;
+
+
+	rects = d3.selectAll("rect");
+	rects
+		.attr("x", d => xScale(d.score))
+//				.attr("x", d => xScale2(d.numDonors))
+		.attr("y", function( d) {
+			return yScale( d.totalDonated) + padding.top;
+			})
+		.attr("width", barWidth)
+//				.attr("width", d => xScale2(d.numDonors))
+		.attr("height", function(d) {
+			return height - yScale(d.totalDonated);
+			})
+	}
 
 
 
