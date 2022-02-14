@@ -401,7 +401,7 @@ function makeGraph() {
 				`translate(${width / 2 + padding.left}, `
 				+ `${height + padding.top + padding.bottom})`)
 			// Move UP from bottom SVG border slightly:
-			.attr("dy", "-1rem")
+			.attr("dy", "-1em")
 			.attr("text-anchor", "middle")
 			.text("RFM Score")
 		;
@@ -424,7 +424,7 @@ function makeGraph() {
 			.attr("transform", `rotate(-90)`)
 			// Moving negative x direction == DOWN:
 			.attr("x", -(height) / 2 - padding.bottom)
-			.attr("dy", "1.5rem")
+			.attr("dy", "1.5em")
 			.attr("text-anchor", "middle")
 		;
 
@@ -460,7 +460,7 @@ function updateGraph() {
 			`translate(${width / 2 + padding.left}, `
 			+ `${height + padding.top + padding.bottom})`)
 			// Move UP from bottom SVG border slightly:
-			.attr("dy", "-1rem")
+			.attr("dy", "-1em")
 		;
 
 
