@@ -3,6 +3,9 @@ svg {
   display: block;
 }
 
+.tick * {
+	font-size: 1rem;
+	}
 
 .tick line {
 	stroke: lightgray;
@@ -14,8 +17,20 @@ svg {
 	display: none;
 	}
 
+
+#legend-title {
+	width: 75vw;
+	text-align: center;
+	margin: 0 auto;
+	border-top: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	}
+
 #colour-legend {
 	display: flex;
+	justify-content: stretch;
+
 	/*
 		Set to wrap, since 1-line vs 2-lines of text == PROBLEM!
 		margin-top & -bottom were auto, leaving divs of different sizes.
@@ -23,16 +38,15 @@ svg {
 	*/
 	flex-wrap: wrap;
 	align-items: center;
-	width: 50vw;
 	text-align: center;
 	font-size: 1rem;
-	margin: 1rem auto;
+	margin: .25rem auto;
 	border: 1px solid black;
 	}
 
 #colour-legend div {
 	flex-grow: 1;
-	flex-shrink: 1;
+	flex-shrink: 0;
 	padding: 5px;
 	}
 
@@ -53,15 +67,27 @@ svg {
 	display: none;
 	}
 
-#RFM-selector {
+#RFM-selector, #freqOptions {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-evenly;
 	align-items: center;
 	width: 75vw;
 	margin: 1rem auto;
-	text-align: center;
+	}
+#RFM-selector {
 	font-size: 1.5rem;
+	margin-bottom: 0;
+	}
+
+input:checked, selectedOpt {
+	background-color: hsl(200, 50%, 50%);
+	}
+
+
+
+#xAxis-label {
+	border: 1px solid green;
 	}
 
 .legend {

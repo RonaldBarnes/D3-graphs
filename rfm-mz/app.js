@@ -14,18 +14,23 @@ let padding = {
 	left: 100
 	};
 
-let barPadding = 5;
-let barWidth = 75;
-barWidth = width / 10;
+let barPadding = 10;
+let barWidth = 50;
+barWidth = width / 12;
 let data = [];
 let svg;
+// xScale & xAxis:
 let xScale;
-let xScale2;
-let yScale;
-let yScaleLog;
-let colourScale;
+let xScale2;	// Unused: was to change bar widths based on X
 let xAxis;
+// yScale(s) and yAxis(es / yAxes):
+let yScale;
+let yScaleFreqNumDonors;
+let yScaleFreqAvgDonation;
+let yScaleLog; // Not used, but Score == 1 is often useless data
 let yAxis;
+// Green to red: green is better target:
+let colourScale;
 let numTotalDonors;
 
 
@@ -34,26 +39,68 @@ let numTotalDonors;
 
 
 
-
 // Initialize radio buttons:
+// Frequency, Recency, Monetary:
 let radio = {
 	F: false,
 	R: false,
 	M: false
 	};
-// Find which button is selected:
-radio.F = d3.select("#F").property("checked");
-radio.R = d3.select("#R").property("checked");
-radio.M = d3.select("#M").property("checked");
-// If no button selected, choose a default:
-if (radio.F === false && radio.M === false && radio.R === false) {
-	// Initialize RFM radio button default selector to Frequency:
-	d3.select("#F")
-		.property("checked", true)
-		;
+let radioFreq = {
+	total: false,
+	numDonors: false,
+	average: false,
+	};
+
+updateRadioValues();
+
+// This will update the radio object values from the HTML, or...
+// Update the HTML if nothing had been set...
+//
+function updateRadioValues() {
+	// Find which button is selected:
 	radio.F = d3.select("#F").property("checked");
+	radio.R = d3.select("#R").property("checked");
+	radio.M = d3.select("#M").property("checked");
+	//
+	// If no button selected, choose a default:
+	if (radio.F === false
+			&& radio.M === false
+			&& radio.R === false) {
+		// Initialize RFM radio button default selector to Frequency:
+		d3.select("#F")
+			.property("checked", true)
+			;
+		// Ensure data structure reflects HTML:
+		radio.F = d3.select("#F").property("checked");
+		}
+	//
+	// Find which Frequency sub-select button is chosen:
+	radioFreq.total = d3.select("#freqTotalDonated")
+		.property("checked");
+	radioFreq.numDonors = d3.select("#freqNumDonors")
+		.property("checked");
+	radioFreq.average = d3.select("#freqAvg")
+		.property("checked");
+	//
+	// If no sub-select button chosen, default is average donation:
+	if (radioFreq.total === false
+			&& radioFreq.numDonors === false
+			&& radioFreq.average === false) {
+		// d3.select("#freqTotalDonated")
+		d3.select("#freqAvg")
+			.property("checked", true)
+			;
+		// Ensure data structure reflects HTML:
+		// radioFreq.total = d3.select("#freqTotalDonated")
+		radioFreq.total = d3.select("#freqAvg")
+			.property("checked");
+		}
+
+	let temp = d3.select("#freqAvg");
+	temp.parentNode
+	console.log("RADIOs:", radio, radioFreq);
 	}
-// console.log("RADIO:", radio);
 
 
 
@@ -93,6 +140,7 @@ d3.queue()
 
 		createScales();
 		makeGraph();
+		colourLegend();
 		}); // end d3.queue
 
 
@@ -100,7 +148,8 @@ d3.queue()
 
 function getPageWidth() {
 	// Get width of graph <div>: same as body width:
-	let divWidth = parseInt( d3.select("#graph").style("width") );
+	// let divWidth = parseInt( d3.select("#graph").style("width") );
+	let divWidth = window.innerWidth;
 	//
 	// Shrink it to leave some space around sides and make it
 	// an even number:
@@ -126,12 +175,14 @@ function getPageHeight() {
 	// window.screen.height = 1200
 	// window.screen.availHeight = 1200
 	//
+	// GREAT example on stackoverflow:
+	// https://stackoverflow.com/questions/3437786/get-the-size-of-the-screen-current-web-page-and-browser-window
 	let tmpHeight = window.innerHeight
 		|| document.documentElement.clientHeight
 		|| window.screen.availHeight
 		|| document.body.clientHeight
 		;
-	tmpHeight = Math.floor(tmpHeight / 100 - 2) * 100;
+	tmpHeight = Math.floor(tmpHeight / 100 - 3) * 100;
 	return tmpHeight;
 	}
 
@@ -143,7 +194,7 @@ function getPageHeight() {
 svg = createSVG();
 //
 function createSVG() {
-// Add an SVG graphic to DOM:
+	// Add an SVG graphic to DOM:
 	svg = d3.select("#graph")
 		.append("svg")
 			// .attr("viewBox", "0 0 2000 1200")
@@ -200,6 +251,7 @@ function createScales() {
 	xAxis2 = d3.axisBottom(xScale2);
 
 
+	// This yScale is for Frequency totalDonated per group:
 	yScale = d3.scaleLinear()
 		// Tweak yAxis domain so doesn't go slightly off scale
 		// Frequency max = 11.5M, with tickSizeOuter(0) it was off-scale
@@ -217,13 +269,44 @@ function createScales() {
 		;
 
 
+	// This yScale is for Frequency: Number of Donors per group
+	yScaleFreqNumDonors = d3.scaleLinear()
+		.domain( [0, d3.max(data, d => d.numDonors)])
+		.range( [height, padding.top])
+		;
+	//
+	yAxisFreqNumDonors = d3.axisLeft(yScaleFreqNumDonors)
+		.tickSize(-width + padding.left - barWidth)
+		.tickSizeOuter(0)
+		.tickFormat(function(text) {
+			return d3.format(".2s")(text);
+			})
+		;
+
+	// This yScale is for Frequency: Average Donation Amount per group
+	yScaleFreqAvgDonation = d3.scaleLinear()
+		.domain( [0, d3.max(data, d => d.averageDonation)])
+		.range( [height, padding.top])
+		;
+	//
+	yAxisFreqAvgDonation = d3.axisLeft(yScaleFreqAvgDonation)
+		.tickSize(-width + padding.left - barWidth)
+		.tickSizeOuter(0)
+		.tickFormat(function(text) {
+			return d3.format("$.2s")(text);
+			})
+		;
+
+
+
 	// Some colourized bars, no real colour meaning (yet):
-//	colourScale = d3.scaleOrdinal()
+	// colourScale = d3.scaleOrdinal()
 	colourScale = d3.scaleLinear()
 		.domain( d3.extent( data, (d) => d.score ))
 //		.range(d3.schemeCategory10)
-		.range(["red", "green"]) //d3.schemeCategory10)
+		.range(["red", "green"])
 		;
+
 	} // end createScales
 
 
@@ -236,7 +319,9 @@ function createScales() {
 // Assign default values to our input / radio buttons:
 d3.selectAll("input")
 	.on("change", function() {
-		// updateGraph();
+		console.log(`INPUT field changed...`);
+		updateRadioValues();
+		updateGraph();
 		})
 	;
 // For responsive design:
@@ -278,18 +363,24 @@ function makeGraph() {
 
 		.enter()
 			.append("rect")
-				.attr("x", d => xScale(d.score))
-//				.attr("x", d => xScale2(d.numDonors))
+				.transition()
+				.duration(1000)
+				.delay( (d,i) => i * 100)
+				.attr("x", d => xScale(d.score) + barPadding/2)
 				.attr("y", function( d) {
-					return yScale( d.totalDonated) + padding.top;
+					// return yScale( d.totalDonated) + padding.top;
+					return yScaleFreqAvgDonation( d.averageDonation) + padding.top;
 					})
-				.attr("width", barWidth)
-//				.attr("width", d => xScale2(d.numDonors))
+				.attr("width", barWidth - barPadding)
 				.attr("height", function(d) {
-					return height - yScale(d.totalDonated);
+					// return height - yScale(d.totalDonated);
+					return height - yScaleFreqAvgDonation(d.averageDonation);
 					})
 				.attr("fill", (d,index) => colourScale(d.score))
 				.attr("stroke", "black")
+				.transition()
+				.duration(1000)
+				.delay( (d,i) => i * 50)
 		;
 
 
@@ -321,35 +412,21 @@ function makeGraph() {
 			// Default sits on right border: move into view:
 			.attr("transform",`translate(${padding.left}, ${padding.top})`)
 			.attr("id", "yAxis")
-			.call(yAxis)
+			// .call(yAxis)
+			.call(yAxisFreqAvgDonation)
 		;
 	// Label yAxis
 	svg
 		.append("text")
 			.attr("id", "yAxis-label")
-			.text("Donation Amount")
+			// .text("Donation Amount")
+			.text("Average Donation Amount")
 			.attr("transform", `rotate(-90)`)
 			// Moving negative x direction == DOWN:
 			.attr("x", -(height) / 2 - padding.bottom)
-			.attr("dy", padding.left  / 2)
+			.attr("dy", "1.5rem")
 			.attr("text-anchor", "middle")
 		;
-
-
-/*
-// TEMPORARY:
-d3.select("svg")
-	.append("g")
-		.append("rect")
-		.attr("transform", `translate(${padding.left}, ${padding.top})`)
-		.attr("width", width)
-		.attr("height", height)
-		.style("outline", "1px solid green")
-//		.attr("x", padding)
-//		.attr("y", padding)
-		.attr("fill", "transparent")
-	;
-*/
 
 	setToolTip()
 	}
@@ -360,7 +437,8 @@ d3.select("svg")
 function updateGraph() {
 	width = getPageWidth();
 	height = getPageHeight();
-	barWidth = width / 10 - barPadding;
+	// Width of bars changes as screen width changes:
+	barWidth = width / 12;
 	// console.log(`WIDTH: ${width}  HEIGHT: ${height}`);
 
 	svg = d3.select("svg");
@@ -380,21 +458,77 @@ function updateGraph() {
 	d3.select("#xAxis-label")
 		.attr("transform",
 			`translate(${width / 2 + padding.left}, `
-			+ `${height + 2 * padding.top})`)
+			+ `${height + padding.top + padding.bottom})`)
+			// Move UP from bottom SVG border slightly:
+			.attr("dy", "-1rem")
 		;
 
-	yScale
-		.range([height, padding.top])
-		;
-	d3.select("#yAxis")
-		.call(yAxis
-			.tickSize(-width + padding.left - barWidth)
-			.tickSizeOuter(0)
-			)
-		;
-	d3.select("#yAxis-label")
-		.attr("x", -(height) / 2 - padding.top - padding.bottom)
-		;
+
+
+
+	// Change yAxis DEPENDING ON RADIO BUTTONS selected:
+	let yAttr;
+	let yHeight;
+
+	if (radio.F === true && radioFreq.total === true)
+		{
+		// use original yScale...
+		yScale
+			.range([height, padding.top])
+			;
+		d3.select("#yAxis")
+			.call(yAxis
+				.tickSize(-width + padding.left - barWidth)
+				.tickSizeOuter(0)
+				)
+			;
+
+		d3.select("#yAxis-label")
+			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
+			.attr("x", -(height) / 2 - padding.bottom)
+			.text("Total Donation Amount")
+			;
+		}
+	else if (radio.F === true && radioFreq.numDonors === true)
+		{
+		// use different yScale...
+		yScaleFreqNumDonors
+			.range([height, padding.top])
+			;
+		d3.select("#yAxis")
+			.call(yAxisFreqNumDonors
+				.tickSize(-width + padding.left - barWidth)
+				.tickSizeOuter(0)
+				)
+			;
+
+		d3.select("#yAxis-label")
+			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
+			.attr("x", -(height) / 2 - padding.bottom)
+			.text("Number of Donors")
+			;
+		}
+	else if (radio.F === true && radioFreq.average === true)
+		{
+		// use different yScale...
+		yScaleFreqAvgDonation
+			.range([height, padding.top])
+			;
+		d3.select("#yAxis")
+			.call(yAxisFreqAvgDonation
+				.tickSize(-width + padding.left - barWidth)
+				.tickSizeOuter(0)
+				)
+			;
+
+		d3.select("#yAxis-label")
+			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
+			.attr("x", -(height) / 2 - padding.bottom)
+			.text("Average Donation Amount")
+			;
+		} // end if ... else if ... else if
+
+
 
 	d3.select("#title")
 		.attr("x", width / 2 + padding.left)
@@ -403,17 +537,59 @@ function updateGraph() {
 
 	rects = d3.selectAll("rect");
 	rects
-		.attr("x", d => xScale(d.score))
+		.transition()
+		.duration(1000)
+		.delay( (d,i) => i * 100)
+		.attr("x", d => xScale(d.score) + barPadding / 2)
 //				.attr("x", d => xScale2(d.numDonors))
 		.attr("y", function( d) {
-			return yScale( d.totalDonated) + padding.top;
+			if (radio.F === true && radioFreq.total === true) {
+				return yScale( d.totalDonated) + padding.top;
+				}
+			else if (radio.F === true && radioFreq.numDonors === true) {
+				return yScaleFreqNumDonors( d.numDonors) + padding.top;
+				}
+			else if (radio.F === true && radioFreq.average === true) {
+				return yScaleFreqAvgDonation( d.averageDonation) + padding.top;
+				}
 			})
-		.attr("width", barWidth)
+		.attr("width", barWidth - barPadding)
 //				.attr("width", d => xScale2(d.numDonors))
 		.attr("height", function(d) {
-			return height - yScale(d.totalDonated);
+			if (radio.F === true && radioFreq.total === true) {
+				return height - yScale(d.totalDonated);
+				}
+			else if (radio.F === true && radioFreq.numDonors === true) {
+				return height - yScaleFreqNumDonors( d.numDonors);
+				}
+			else if (radio.F === true && radioFreq.average === true) {
+				return height - yScaleFreqAvgDonation( d.averageDonation);
+				}
 			})
+
+
+
+
+/*
+// TEMPORARY: test padding vs graph position: BREAKS SVG: rect - data:
+d3.select("svg")
+	.append("g")
+		.append("rect")
+		.attr("transform", `translate(${padding.left}, ${padding.top})`)
+		.attr("width", width)
+		.attr("height", height)
+		.style("outline", "1px solid green")
+//		.attr("x", padding)
+//		.attr("y", padding)
+		.attr("fill", "transparent")
+	;
+*/
+
 	}
+
+
+
+
 
 
 
@@ -483,7 +659,7 @@ function tooltipShow(data) {
 			<p>Number of Donors: ${data.numDonors.toLocaleString()}</p>
 			<p>Total Donations: ${data.totalDonations.toLocaleString()}</p>
 			<p>Total Donated: $${data.totalDonated.toLocaleString()}</p>
-			<p>Average Donation: $${data.averageDonations.toLocaleString()}</p>
+			<p>Average Donation: $${data.averageDonation.toFixed(2).toLocaleString()}</p>
 			`)
 		;
 	}
@@ -494,4 +670,22 @@ function tooltipHide() {
 	d3.select("#tooltip")
 		.style("opacity", 0)
 		;
+	}
+
+
+
+
+function colourLegend() {
+	// Create colourized legend for continents:
+	let legend = "";
+	data.map( r => {
+		legend += `<div style="background:${colourScale(r.score)}" `
+		+ `title="${r.score}">`
+		+ `${r.score}</div>`;
+		// console.log(`Colour Legend: ${r.score}`);
+		});
+	console.log(`LEGEND: ${legend}`)
+	d3.select("#colour-legend")
+		.html(legend)
+	;
 	}

@@ -23,7 +23,7 @@
 	<div id="RFM-selector">
 		<!-- p>Choose Recency, Frequency, or Monetary:</p -->
 		<span>
-			<input type="radio" name="RFM" id="R" value="R" />
+			<input type="radio" name="RFM" id="R" value="R" disabled />
 			<label for="R">Recency</label>
 		</span>
 		<span>
@@ -31,10 +31,30 @@
 			<label for="F">Frequency</label>
 		</span>
 		<span>
-			<input type="radio" name="RFM" id="M" value="M" />
+			<input type="radio" name="RFM" id="M" value="M" disabled />
 			<label for="M">Monetary</label>
 		</span>
 	</div>
+	<div id="freqOptions">
+		<span>
+			<input type="radio" name="freqOpts" id="freqTotalDonated" />
+			<label for="freqTotalDonated">Total Donated</label>
+		</span>
+		<span>
+			<input type="radio" name="freqOpts" id="freqNumDonors" />
+			<label for="freqNumDonors">Number of Donors</label>
+		</span>
+		<span>
+			<input type="radio" name="freqOpts" id="freqAvg" />
+			<label for="freqAvg">Average Donation</label>
+		</span>
+	</div>
+	<div id="legend-title">
+		Colour Legend: Green is highest value (score=10), red is lowest.
+		<div id="colour-legend"></div>
+	</div>
+<div id="pixel"></div>
+
   <!-- script src="https://d3js.org/d3.v4.js"></script -->
   <script src="./d3.v4.js"></script>
   <script src="app.js"></script>
