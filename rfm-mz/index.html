@@ -31,24 +31,57 @@
 			<label for="F">Frequency</label>
 		</span>
 		<span>
-			<input type="radio" name="RFM" id="M" value="M" disabled />
+			<input type="radio" name="RFM" id="M" value="M" />
 			<label for="M">Monetary</label>
 		</span>
 	</div>
-	<div id="freqOptions">
+	<div id="optsRecency">
 		<span>
-			<input type="radio" name="freqOpts" id="freqTotalDonated" />
+			<input type="radio" name="optsRecency" id="recTotalDonated" />
+			<label for="recTotalDonated">Total Donated</label>
+		</span>
+		<span>
+			<input type="radio" name="optsRecency" id="recNumDonors" />
+			<label for="recNumDonors">Number of Donors</label>
+		</span>
+		<span>
+			<input type="radio" name="optsRecency" id="recAvg" />
+			<label for="recAvg">Average Donation</label>
+		</span>
+	</div>
+	<div id="optsFrequency">
+		<span>
+			<input type="radio" name="optsFrequency" id="freqTotalDonated" />
 			<label for="freqTotalDonated">Total Donated</label>
 		</span>
 		<span>
-			<input type="radio" name="freqOpts" id="freqNumDonors" />
+			<input type="radio" name="optsFrequency" id="freqNumDonors" />
 			<label for="freqNumDonors">Number of Donors</label>
 		</span>
 		<span>
-			<input type="radio" name="freqOpts" id="freqAvg" />
+			<input type="radio" name="optsFrequency" id="freqAvg" />
 			<label for="freqAvg">Average Donation</label>
 		</span>
 	</div>
+	<div id="optsMoney">
+		<span>
+			<input type="radio" name="optsMoney" id="moneyTotalDonated" />
+			<label for="moneyTotalDonated">Total Donated</label>
+		</span>
+		<span>
+			<input type="radio" name="optsMoney" id="moneyNumDonors" />
+			<label for="moneyNumDonors">Number of Donors</label>
+		</span>
+		<span>
+			<input type="radio" name="optsMoney" id="moneyAvgPerDonor" disabled />
+			<label for="moneyAvgPerDonor">Avg Donation / Donor</label>
+		</span>
+		<span>
+			<input type="radio" name="optsMoney" id="moneyAvgDonation" disabled />
+			<label for="moneyAvgDonation">Avg Donation / Donation</label>
+		</span>
+	</div>
+
 	<div id="legend-title">
 		Colour Legend: Green is highest value (score=10), red is lowest.
 		<div id="colour-legend"></div>

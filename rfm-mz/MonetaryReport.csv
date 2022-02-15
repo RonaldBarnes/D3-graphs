@@ -1,4 +1,4 @@
-Score,"numberDonors","leastDonated","mostDonated","totalDonated","averageDonated","Number","avgDonation"
+score,"numDonors","leastDonated","mostDonated","totalDonated","avgDonatedPerDonor","numDonations","avgDonation"
 10,566,900.00,"5,991,957.00","29,900,252.44","52,827.30","1,563","19,130.04"
 9,707,300.00,890.01,"330,266.19",467.14,"1,245",265.27
 8,519,200.00,299.00,"119,605.09",230.45,805,148.58

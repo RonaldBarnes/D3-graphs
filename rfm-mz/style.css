@@ -67,7 +67,7 @@ svg {
 	display: none;
 	}
 
-#RFM-selector, #freqOptions {
+#RFM-selector, #optsRecency, #optsFrequency, #optsMoney {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-evenly;
@@ -78,6 +78,11 @@ svg {
 #RFM-selector {
 	font-size: 1.5rem;
 	margin-bottom: 0;
+	}
+
+#optsFrequency, #optsRecency, #optsMoney {
+	/* Initialize with none showing 'til a parent radio is selected: */
+	display: none;
 	}
 
 input:checked, selectedOpt {
