@@ -99,6 +99,15 @@ function updateRadioValues() {
 		d3.select("#optsMoney")
 			.style("display", "none")
 			;
+//
+let tmp = document.querySelector("#R");
+tmp.parentNode.style.backgroundColor = "hsl(222, 90%, 75%)";
+tmp = document.querySelector("#F");
+tmp.parentNode.style.backgroundColor = "transparent";
+tmp = document.querySelector("#M");
+tmp.parentNode.style.backgroundColor = "transparent";
+//
+//
 		// Update data set to Recency:
 		data = dataRecency;
 console.log("DATA SET CHANGED TO REC:\n", dataRecency);
@@ -128,6 +137,15 @@ console.log("DATA SET CHANGED TO REC:\n", dataRecency);
 		// Update data set to Frequency:
 		data = dataFreq;
 console.log("DATA SET CHANGED TO FREQ:\n", dataFreq);
+//
+let tmp = document.querySelector("#F");
+tmp.parentNode.style.backgroundColor = "hsl(222, 90%, 75%)";
+tmp = document.querySelector("#R");
+tmp.parentNode.style.backgroundColor = "transparent";
+tmp = document.querySelector("#M");
+tmp.parentNode.style.backgroundColor = "transparent";
+//
+//
 		//
 		// Display sub-selections for Frequency & hide others:
 		d3.select("#optsRecency")
@@ -167,6 +185,14 @@ console.log("DATA SET CHANGED TO FREQ:\n", dataFreq);
 		// Update data set to Monetary:
 		data = dataMoney;
 console.log("DATA SET CHANGED TO MONEY:\n", dataMoney);
+//
+let tmp = document.querySelector("#R");
+tmp.parentNode.style.backgroundColor = "transparent";
+tmp = document.querySelector("#F");
+tmp.parentNode.style.backgroundColor = "transparent";
+tmp = document.querySelector("#M");
+tmp.parentNode.style.backgroundColor = "hsl(222, 90%, 75%)";
+//
 		//
 		// Display sub-selections for Monetary & hide others:
 		d3.select("#optsRecency")
@@ -630,10 +656,8 @@ function updateGraph() {
 	else if (radioRFM.F === true && radioFreq.average === true)
 		{
 		yScale
-			.domain( [0, d3.max(data, function(d) {
-				console.log("AVG NUM DONATIONS: ", d.avgNumDonations);
-				return d.avgNumDonations * 1.1;
-				})])
+			.domain( [0, d3.max(data, d => d.avgNumDonations * 1.1) ])
+//				})])
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")

@@ -1,3 +1,8 @@
+body {
+	margin: 0;
+	box-sizing: border-box;
+	}
+
 svg {
   margin: 0 auto;
   display: block;
@@ -21,10 +26,11 @@ svg {
 #legend-title {
 	width: 75vw;
 	text-align: center;
-	margin: 0 auto;
+	margin: 0.5em auto;
 	border-top: 1px solid black;
 	border-left: 1px solid black;
 	border-right: 1px solid black;
+	border-radius: 5px;
 	}
 
 #colour-legend {
@@ -50,46 +56,43 @@ svg {
 	padding: 5px;
 	}
 
-#years {
-	display: flex;
-	justify-content: space-between;
-	width: 50vw;
-	margin: auto;
-	}
-
-#year {
-	text-align: center;
-	font-size: 1.5rem;
-	font-weight: bold;
-	}
-
-.range {
-	display: none;
-	}
-
 #RFM-selector, #optsRecency, #optsFrequency, #optsMoney {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-evenly;
 	align-items: center;
 	width: 75vw;
-	margin: 1rem auto;
 	text-align: center;
+	border-radius: 5px;
 	}
+
 #RFM-selector {
 	font-size: 1.5rem;
-	margin-bottom: 0;
+	margin: 0.5em auto 0 auto;
+	}
+
+#RFM-selector > span {
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	padding: 0 1em .5em 1em;
 	}
 
 #optsFrequency, #optsRecency, #optsMoney {
 	/* Initialize with none showing 'til a parent radio is selected: */
 	display: none;
 	font-size: 1.25rem;
+	border-radius: 5px;
+	padding: 0.5em 0;
+	margin: 0 auto;
+	background-color: hsl(222, 90%, 75%);
 	}
 
 /* Does not work */
-input:checked, selectedOpt {
+selected-On {
 	background-color: hsl(200, 50%, 50%);
+	}
+selected-Off {
+	background-color: transparent;
 	}
 
 
@@ -104,6 +107,7 @@ input:checked, selectedOpt {
 	font-size: 1.5rem;
 	text-align: center;
 	}
+
 #tooltip, .tooltip {
 	opacity: 0;
 	position: absolute;
