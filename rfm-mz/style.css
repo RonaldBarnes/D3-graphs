@@ -74,6 +74,7 @@ svg {
 	align-items: center;
 	width: 75vw;
 	margin: 1rem auto;
+	text-align: center;
 	}
 #RFM-selector {
 	font-size: 1.5rem;
@@ -83,8 +84,10 @@ svg {
 #optsFrequency, #optsRecency, #optsMoney {
 	/* Initialize with none showing 'til a parent radio is selected: */
 	display: none;
+	font-size: 1.25rem;
 	}
 
+/* Does not work */
 input:checked, selectedOpt {
 	background-color: hsl(200, 50%, 50%);
 	}
@@ -141,9 +144,15 @@ input:checked, selectedOpt {
 	#RFM-selector {
 		font-size: 3rem;
 		}
+
+	#optsRecency, #optsFrequency, #optsMoney {
+		font-size: 2rem;
+		}
+
 	#tooltip, .tooltip {
 		font-size: 3rem;
 		}
+
 	#xAxis-label, #yAxis-label, #title {
 		font-size: 3rem;
 		}

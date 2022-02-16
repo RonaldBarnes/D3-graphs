@@ -23,7 +23,7 @@
 	<div id="RFM-selector">
 		<!-- p>Choose Recency, Frequency, or Monetary:</p -->
 		<span>
-			<input type="radio" name="RFM" id="R" value="R" disabled />
+			<input type="radio" name="RFM" id="R" value="R" />
 			<label for="R">Recency</label>
 		</span>
 		<span>
@@ -35,6 +35,7 @@
 			<label for="M">Monetary</label>
 		</span>
 	</div>
+
 	<div id="optsRecency">
 		<span>
 			<input type="radio" name="optsRecency" id="recTotalDonated" />
@@ -45,10 +46,11 @@
 			<label for="recNumDonors">Number of Donors</label>
 		</span>
 		<span>
-			<input type="radio" name="optsRecency" id="recAvg" />
-			<label for="recAvg">Average Donation</label>
+			<input type="radio" name="optsRecency" id="recAvgDaily" />
+			<label for="recAvgDaily">Average Donation</label>
 		</span>
 	</div>
+
 	<div id="optsFrequency">
 		<span>
 			<input type="radio" name="optsFrequency" id="freqTotalDonated" />
@@ -60,9 +62,10 @@
 		</span>
 		<span>
 			<input type="radio" name="optsFrequency" id="freqAvg" />
-			<label for="freqAvg">Average Donation</label>
+			<label for="freqAvg">Average Number of Donations</label>
 		</span>
 	</div>
+
 	<div id="optsMoney">
 		<span>
 			<input type="radio" name="optsMoney" id="moneyTotalDonated" />
@@ -73,17 +76,17 @@
 			<label for="moneyNumDonors">Number of Donors</label>
 		</span>
 		<span>
-			<input type="radio" name="optsMoney" id="moneyAvgPerDonor" disabled />
+			<input type="radio" name="optsMoney" id="moneyAvgPerDonor" />
 			<label for="moneyAvgPerDonor">Avg Donation / Donor</label>
 		</span>
 		<span>
-			<input type="radio" name="optsMoney" id="moneyAvgDonation" disabled />
-			<label for="moneyAvgDonation">Avg Donation / Donation</label>
+			<input type="radio" name="optsMoney" id="moneyAvgDonation" />
+			<label for="moneyAvgDonation">Avg Donation</label>
 		</span>
 	</div>
 
 	<div id="legend-title">
-		Colour Legend: Green is highest value (score=10), red is lowest.
+		Colour Legend: green is highest value (score=10), red is lowest.
 		<div id="colour-legend"></div>
 	</div>
 <div id="pixel"></div>

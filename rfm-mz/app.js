@@ -26,9 +26,6 @@ let xScale2;	// Unused: was to change bar widths based on X
 let xAxis;
 // yScale(s) and yAxis(es / yAxes):
 let yScale;
-let yScaleFreqNumDonors;
-let yScaleFreqAvgDonation;
-let yScaleLog; // Not used, but Score == 1 is often useless data
 let yAxis;
 // Green to red: green is better target:
 let colourScale;
@@ -46,9 +43,14 @@ let dataMoney;
 // Initialize radio buttons:
 // Frequency, Recency, Monetary:
 let radioRFM = {
-	F: false,
 	R: false,
+	F: false,
 	M: false
+	};
+let radioRec = {
+	total: false,
+	numDonors: false,
+	avgDaily: false,
 	};
 let radioFreq = {
 	total: false,
@@ -68,7 +70,7 @@ let radioMoney = {
 // Update the HTML if nothing had been set...
 //
 function updateRadioValues() {
-	// Find which button is selected:
+	// Find which radio button is selected, R or F or M?:
 	radioRFM.R = d3.select("#R").property("checked");
 	radioRFM.F = d3.select("#F").property("checked");
 	radioRFM.M = d3.select("#M").property("checked");
@@ -84,17 +86,67 @@ function updateRadioValues() {
 		// Ensure data structure reflects HTML:
 		radioRFM.F = d3.select("#F").property("checked");
 		}
+
+	if (radioRFM.R) {
+		//
+		// Display sub-selections for Recency & hide others:
+		d3.select("#optsRecency")
+			.style("display", "flex")
+			;
+		d3.select("#optsFrequency")
+			.style("display", "none")
+			;
+		d3.select("#optsMoney")
+			.style("display", "none")
+			;
+		// Update data set to Recency:
+		data = dataRecency;
+console.log("DATA SET CHANGED TO REC:\n", dataRecency);
+		//
+		// Find which Recency sub-select button is chosen:
+		radioRec.total = d3.select("#recTotalDonated")
+			.property("checked");
+		radioRec.numDonors = d3.select("#recNumDonors")
+			.property("checked");
+		radioRec.avgDaily = d3.select("#recAvgDaily")
+			.property("checked");
+		//
+		// If no sub-select button chosen, default is ... ?
+		if (radioRec.total === false
+				&& radioRec.numDonors === false
+				&& radioRec.avgDaily === false) {
+			d3.select("#recAvgDaily")
+				.property("checked", true)
+				;
+			// Ensure data structure reflects HTML:
+			radioRec.avgDaily = d3.select("#recAvgDaily")
+				.property("checked");
+			}
+		} // end if Recency
+
 	if (radioRFM.F) {
-		// Display sub-selections for Frequency:
+		// Update data set to Frequency:
+		data = dataFreq;
+console.log("DATA SET CHANGED TO FREQ:\n", dataFreq);
+		//
+		// Display sub-selections for Frequency & hide others:
+		d3.select("#optsRecency")
+			.style("display", "none")
+			;
 		d3.select("#optsFrequency")
 			.style("display", "flex")
 			;
 		d3.select("#optsMoney")
 			.style("display", "none")
 			;
-		// Update data set to Frequency:
-		data = dataFreq;
-console.log("DATA SET CHANGED TO FREQ:", data, dataFreq);
+		//
+		// Find which Frequency sub-select button is chosen:
+		radioFreq.total = d3.select("#freqTotalDonated")
+			.property("checked");
+		radioFreq.numDonors = d3.select("#freqNumDonors")
+			.property("checked");
+		radioFreq.average = d3.select("#freqAvg")
+			.property("checked");
 		//
 		// If no sub-select button chosen, default is average donation:
 		if (radioFreq.total === false
@@ -105,74 +157,57 @@ console.log("DATA SET CHANGED TO FREQ:", data, dataFreq);
 				;
 			// Ensure data structure reflects HTML:
 			// radioFreq.total = d3.select("#freqTotalDonated")
-			radioFreq.total = d3.select("#freqAvg")
+			radioFreq.average = d3.select("#freqAvg")
 				.property("checked");
 			}
-		// Find which Frequency sub-select button is chosen:
-		radioFreq.total = d3.select("#freqTotalDonated")
-			.property("checked");
-			// Set yScale to new data set:
-//			yScale
-//				.domain( d3.extent( d => totalDonations))
-		radioFreq.numDonors = d3.select("#freqNumDonors")
-			.property("checked");
-			// Set yScale to new data set:
-//			yScale
-//				.domain( d3.extent( d => numDonors))
-		radioFreq.average = d3.select("#freqAvg")
-			.property("checked");
 		} // end if Frequency
 
 	else if (radioRFM.M) {
-		// Display sub-selections for Monetary:
-		d3.select("#optsMoney")
-			.style("display", "flex")
+		//
+		// Update data set to Monetary:
+		data = dataMoney;
+console.log("DATA SET CHANGED TO MONEY:\n", dataMoney);
+		//
+		// Display sub-selections for Monetary & hide others:
+		d3.select("#optsRecency")
+			.style("display", "none")
 			;
 		d3.select("#optsFrequency")
 			.style("display", "none")
 			;
+		d3.select("#optsMoney")
+			.style("display", "flex")
+			;
+		//
+		// Find which Monetary sub-select button is chosen:
+		radioMoney.total = d3.select("#moneyTotalDonated")
+			.property("checked");
+		radioMoney.numDonors = d3.select("#moneyNumDonors")
+			.property("checked");
+		radioMoney.avgPerDonor = d3.select("#moneyAvgPerDonor")
+			.property("checked");
+		radioMoney.avgDonation = d3.select("#moneyAvgDonation")
+			.property("checked");
 		//
 		// If no sub-select button chosen, default is average donation:
 		if (radioMoney.total === false
 				&& radioMoney.numDonors === false
 				&& radioMoney.avgPerDonor === false
-				&& radioMoney.averagePerDonation === false) {
-			d3.select("#moneyAvgPerDonor")
+				&& radioMoney.avgDonation === false) {
+			d3.select("#moneyTotalDonated")
 				.property("checked", true)
 				;
 			// Ensure data structure reflects HTML:
-			radioMoney.total = d3.select("#moneyAvgPerDonor")
+			radioMoney.total = d3.select("#moneyTotalDonated")
 				.property("checked");
 			} // end if
-		//
-		// Find which Monetary sub-select button is chosen:
-		radioMoney.total = d3.select("#moneyTotalDonated")
-			.property("checked");
-			// Set yScale to new data set:
-//			yScale
-//				.domain( d3.extent( d => totalDonated))
-		radioMoney.numDonors = d3.select("#moneyNumDonors")
-			.property("checked");
-			// Set yScale to new data set:
-//			yScale
-//				.domain( d3.extent( d => numDonors))
-		radioMoney.avgPerDonor = d3.select("#moneyAvgPerDonor")
-			.property("checked");
-			// Set yScale to new data set:
-//			yScale
-//				.domain( d3.extent( d => avgDonation))
-		radioMoney.avgDonation = d3.select("#moneyAvgDonation")
-			.property("checked");
-		// Update data set to Monetary:
-		data = dataMoney;
-console.log("DATA SET CHANGED TO MONEY:", data, dataMoney);
 		} // end else if Monetary
 
 
-//	let temp = d3.select("#freqAvg");
-//	temp.parentNode
-	console.log("RADIOs radioRFM:", radioRFM,
-		"radioFreq", radioFreq,
+	console.log("RADIOs \n",
+		"radioRFM:", radioRFM, "\n",
+		"radioRec", radioRec, "\n",
+		"radioFreq", radioFreq, "\n",
 		"radioMoney", radioMoney
 		);
 	}
@@ -183,13 +218,25 @@ console.log("DATA SET CHANGED TO MONEY:", data, dataMoney);
 d3.queue()
 	// HOW does the formatting callback function fit within these calls?!
 
+	.defer(d3.csv, "RecencyReport.csv")
 	.defer(d3.csv, "FrequencyReport.csv")
 	.defer(d3.csv, "MonetaryReport.csv")
 
-	.await(function(error, freqData, moneyData) {
+	.await(function(error, recData, freqData, moneyData) {
 		if (error) throw error;
 
-//		if (radioRFM.F) {
+			// Map over records, converting strings to numbers:
+			data = dataRecency = recData.map( record => {
+				// Stupid JS Number() chokes on commas in formatted numbers?!?
+				Object.keys(record).forEach( field => {
+					// Date fields do not get converted to Number():
+					if ( field !== "dateFirst" && field !== "dateLast") {
+						record[field] = Number(record[field].replace(/,/g,""));
+						}
+					});
+				return record;
+				});
+
 			// Map over records, converting strings to numbers:
 			data = dataFreq = freqData.map( record => {
 				// Stupid JS Number() chokes on commas in formatted numbers?!?
@@ -198,8 +245,7 @@ d3.queue()
 					});
 				return record;
 				});
-//			} // end if Frequency
-//		else if (radioRFM.M) {
+
 			// Map over records, converting strings to numbers:
 			data = dataMoney = moneyData.map( record => {
 				// Stupid JS Number() chokes on commas in formatted numbers?!?
@@ -208,15 +254,21 @@ d3.queue()
 					});
 				return record;
 				});
-//			} // end if Monetary
 
 
-		console.log("d3.queue() DATA", data, dataFreq, dataMoney);
+		console.log("d3.queue()\n",
+			"dataRecency:", dataRecency, "\n",
+			"dataFreq: ", dataFreq, "\n",
+			"dataMoney:", dataMoney
+			);
 
-		// Set the data set according to the radio buttons selected:
+		// Choose the data set according to the radio buttons selected:
 		updateRadioValues();
+		// Now we have data, set the scales:
 		createScales();
+		// Create a basic, unpopulated graph (which then calls updateGraph())
 		makeGraph();
+		// Explanation of bar colours:
 		colourLegend();
 		}); // end d3.queue
 
@@ -224,8 +276,6 @@ d3.queue()
 
 
 function getPageWidth() {
-	// Get width of graph <div>: same as body width:
-	// let divWidth = parseInt( d3.select("#graph").style("width") );
 	let divWidth = window.innerWidth;
 	//
 	// Shrink it to leave some space around sides and make it
@@ -235,16 +285,6 @@ function getPageWidth() {
 	}
 
 function getPageHeight() {
-	// Gives height=0 at initial page load (since nothing's drawn):
-	// tmpHeight = parseInt( d3.select("#graph").style("height") );
-	//
-	// This doesn't shrink once bar graph drawn:
-	// tmpHeight = d3.select("html")._parents[0].scrollHeight;
-	// Again, height doesn't shrink once bars exist:
-	// let tmpHeight = d3.select("html")._parents[0].scrollHeight
-	//
-	//	let tmpHeight = d3.select("body")._groups[0][0].clientHeight
-	//	let tmpHeight = d3.select("html")._parents[0].clientHeight
 	//
 	// document.body.clientHeight = 854 (but is only 34px at load!)
 	// window.innerHeight = 997
@@ -259,8 +299,10 @@ function getPageHeight() {
 		|| window.screen.availHeight
 		|| document.body.clientHeight
 		;
+	// Shave some space off height for radios & make an even number:
 	tmpHeight = Math.floor(tmpHeight / 100 - 3) * 100;
-	return tmpHeight;
+	// If screen too small (i.e. mobile landscape): set minimum size:
+	return tmpHeight < 400 ? 400 : tmpHeight;
 	}
 
 
@@ -313,21 +355,6 @@ function createScales() {
 	xAxis = d3.axisBottom(xScale)
 		;
 
-/*
-	// Alternate scale where bar's widths relate to numDonors:
-	// Gather total number of donors for xScale2:
-	numTotalDonors = data.map(d => d.numDonors)
-		.reduce( (p,n) =>	p+n,0);
-	let [minNumDonors, maxNumDonors]
-		= d3.extent(data, (d) => d.numDonors);
-	// Create scale for number of donors along xAxis:
-	xScale2 = d3.scaleLinear()
-		.domain([0, numTotalDonors + maxNumDonors]  )
-		.range([padding.left, width])
-		;
-	xAxis2 = d3.axisBottom(xScale2);
-*/
-
 	// This yScale is for Frequency totalDonated per group:
 	yScale = d3.scaleLinear()
 		// Tweak yAxis domain so doesn't go slightly off scale
@@ -345,38 +372,8 @@ function createScales() {
 			})
 		;
 
-/*
-	// This yScale is for Frequency: Number of Donors per group
-	yScaleFreqNumDonors = d3.scaleLinear()
-		.domain( [0, d3.max(data, d => d.numDonors)])
-		.range( [height, padding.top])
-		;
-	//
-	yAxisFreqNumDonors = d3.axisLeft(yScaleFreqNumDonors)
-		.tickSize(-width + padding.left - barWidth)
-		.tickSizeOuter(0)
-		.tickFormat(function(text) {
-			return d3.format(".2s")(text);
-			})
-		;
 
-	// This yScale is for Frequency: Average Donation Amount per group
-	yScaleFreqAvgDonation = d3.scaleLinear()
-		.domain( [0, d3.max(data, d => d.avgDonation)])
-		.range( [height, padding.top])
-		;
-	//
-	yAxisFreqAvgDonation = d3.axisLeft(yScaleFreqAvgDonation)
-		.tickSize(-width + padding.left - barWidth)
-		.tickSizeOuter(0)
-		.tickFormat(function(text) {
-			return d3.format("$.2s")(text);
-			})
-		;
-*/
-
-
-	// Some colourized bars, no real colour meaning (yet):
+	// Some colourized bars, GREEN is gooder, RED is badder:
 	// colourScale = d3.scaleOrdinal()
 	colourScale = d3.scaleLinear()
 		.domain( d3.extent( data, (d) => d.score ))
@@ -392,8 +389,7 @@ function createScales() {
 
 
 
-
-// Assign default values to our input / radio buttons:
+// Listeners on input fields:
 d3.selectAll("input")
 	.on("change", function() {
 		console.log(`INPUT field changed...`);
@@ -401,26 +397,22 @@ d3.selectAll("input")
 		updateGraph();
 		})
 	;
-// For responsive design:
-// Created new .append() every resize instead of .update...
-// Look into this (later)
+//
+// For responsive design, listen to page resizing:
 window.addEventListener("resize", updateGraph );
-
-
-/*
+//
+//
 // DisplayPixelRatio is > 1 on hiDPI (3.x on Pixel4a Firefox)
 //	Wrote media query CSS to handle this
 d3.select("#pixel")
 	.append("text")
-	.text(window.devicePixelRatio)
+	.text(`devicePixelRatio: ${window.devicePixelRatio}`)
 	.style("font-size", "3em")
 	;
-*/
+
 
 
 // Initialize graph:
-// makeGraph(startYear);
-
 function makeGraph() {
 
 	let svg = d3.select("svg");
@@ -440,26 +432,6 @@ function makeGraph() {
 		// Add rects / bars to graph, default is Frequency data:
 		.enter()
 			.append("rect")
-/*
-				.transition()
-				.duration(1000)
-				.delay( (d,i) => i * 100)
-				.attr("x", d => xScale(d.score) + barPadding/2)
-				.attr("y", function( d) {
-					// return yScale( d.totalDonated) + padding.top;
-					return yScaleFreqAvgDonation( d.averageDonation) + padding.top;
-					})
-				.attr("width", barWidth - barPadding)
-				.attr("height", function(d) {
-					// return height - yScale(d.totalDonated);
-					return height - yScaleFreqAvgDonation(d.averageDonation);
-					})
-				.attr("fill", (d,index) => colourScale(d.score))
-				.attr("stroke", "black")
-				.transition()
-				.duration(1000)
-				.delay( (d,i) => i * 50)
-*/
 		;
 
 
@@ -493,14 +465,11 @@ function makeGraph() {
 			// Default sits on right border: move into view:
 			.attr("transform",`translate(${padding.left}, ${padding.top})`)
 			.call(yAxis)
-			// .call(yAxisFreqAvgDonation)
 		;
 	// Label yAxis
 	svg
 		.append("text")
 			.attr("id", "yAxis-label")
-			// .text("Donation Amount")
-//			.text("Average Donation Amount")
 			.attr("transform", `rotate(-90)`)
 			// Moving negative x direction == DOWN:
 			.attr("x", -(height) / 2 - padding.bottom)
@@ -518,7 +487,7 @@ function makeGraph() {
 
 
 
-// Responsive design - changes in size of window:
+// Responsive design - changes in size of window or radio buttons:
 function updateGraph() {
 	width = getPageWidth();
 	height = getPageHeight();
@@ -526,7 +495,7 @@ function updateGraph() {
 	barWidth = width / 12;
 	// console.log(`WIDTH: ${width}  HEIGHT: ${height}`);
 
-console.log("updateGraph() DATA:", data);
+	//console.log("updateGraph() DATA:", data);
 
 	svg = d3.select("svg");
 	svg
@@ -555,7 +524,68 @@ console.log("updateGraph() DATA:", data);
 
 	// Change yAxis DEPENDING ON RADIO BUTTONS selected:
 
-	if ( (radioRFM.F === true && radioFreq.total === true)
+	if (radioRFM.R === true && radioRec.total === true)
+		{
+		yScale
+			.domain( [0, (d3.max(data, (d) => d.totalDonated) * 1.1) ] )
+			.range([height, padding.top])
+			;
+		d3.select("#yAxis")
+			.call(yAxis
+				.tickSize(-width + padding.left - barWidth)
+				.tickSizeOuter(0)
+				.tickFormat( text => d3.format("$.1s")(text))
+				)
+			;
+		d3.select("#yAxis-label")
+			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
+			.attr("x", -(height) / 2 - padding.bottom)
+			.text("Total Donation Amount")
+			;
+		}
+
+	else if (radioRFM.R === true && radioRec.numDonors === true)
+		{
+		yScale
+			.domain( [0, (d3.max(data, d => d.numDonors) * 1.1) ] )
+			.range([height, padding.top])
+			;
+		d3.select("#yAxis")
+			.call(yAxis
+				.tickSize(-width + padding.left - barWidth)
+				.tickSizeOuter(0)
+//				.tickFormat( text => d3.format("$.1s")(text))
+				.tickFormat( text => d3.format("")(text))
+				)
+			;
+		d3.select("#yAxis-label")
+			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
+			.attr("x", -(height) / 2 - padding.bottom)
+			.text("Number of Donors")
+			;
+		}
+
+	else if (radioRFM.R === true && radioRec.avgDaily === true)
+		{
+		yScale
+			.domain( [0, (d3.max(data, (d) => d.avgDaily) * 1.1) ] )
+			.range([height, padding.top])
+			;
+		d3.select("#yAxis")
+			.call(yAxis
+				.tickSize(-width + padding.left - barWidth)
+				.tickSizeOuter(0)
+				.tickFormat( text => d3.format("$.1s")(text))
+				)
+			;
+		d3.select("#yAxis-label")
+			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
+			.attr("x", -(height) / 2 - padding.bottom)
+			.text("Average Daily Amount")
+			;
+		}
+
+	else if ( (radioRFM.F === true && radioFreq.total === true)
 				|| (radioRFM.M === true && radioMoney.total) )
 		{
 		// use original yScale...
@@ -567,7 +597,7 @@ console.log("updateGraph() DATA:", data);
 			.call(yAxis
 				.tickSize(-width + padding.left - barWidth)
 				.tickSizeOuter(0)
-				.tickFormat( text => d3.format(".3s")(text))
+				.tickFormat( text => d3.format("$.1s")(text))
 				)
 			;
 		d3.select("#yAxis-label")
@@ -580,19 +610,18 @@ console.log("updateGraph() DATA:", data);
 	else if (radioRFM.F === true && radioFreq.numDonors === true)
 		{
 		// use different yScale...
-		yScale	// FreqNumDonors
+		yScale
 			.domain( [0, d3.max(data, d => d.numDonors) * 1.1] )
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
-			.call(yAxis			// yAxisFreqNumDonors
+			.call(yAxis
 				.tickSize(-width + padding.left - barWidth)
 				.tickSizeOuter(0)
 				.tickFormat( text => d3.format(".2s")(text))
 				)
 			;
 		d3.select("#yAxis-label")
-			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
 			.attr("x", -(height) / 2 - padding.bottom)
 			.text("Number of Donors")
 			;
@@ -601,23 +630,27 @@ console.log("updateGraph() DATA:", data);
 	else if (radioRFM.F === true && radioFreq.average === true)
 		{
 		yScale
-			.domain( [0, (d3.max(data, (d) => d.avgDonation) * 1.1) ] )
+			.domain( [0, d3.max(data, function(d) {
+				console.log("AVG NUM DONATIONS: ", d.avgNumDonations);
+				return d.avgNumDonations * 1.1;
+				})])
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
 			.call(yAxis
 				.tickSize(-width + padding.left - barWidth)
 				.tickSizeOuter(0)
-				.tickFormat( text => d3.format("$.2f")(text))
+				.tickFormat( text => d3.format("")(text))
+//				.tickFormat( text => d3.format("$,.0f")(text))
 				)
 			;
 		d3.select("#yAxis-label")
 			.attr("x", -(height) / 2 - padding.bottom)
 			.transition()
 			.duration(5000)
-			.text("Average Donation Amount")
+			.text("Average Number Donations")
 			;
-		} // end if ... else if ... else if
+		} // end else if
 
 	else if (radioRFM.M === true && radioMoney.total === true)
 		{
@@ -637,11 +670,11 @@ console.log("updateGraph() DATA:", data);
 			.attr("x", -(height) / 2 - padding.bottom)
 			.text("Total Donation Amount")
 			;
-		}
+		}	// end else if
 
 	else if (radioRFM.M === true && radioMoney.numDonors === true)
 		{
-		// use different yScale...
+		// update yScale...
 		yScale
 			.domain( [0, d3.max(data, d => d.numDonors) * 1.1])
 			.range([height, padding.top])
@@ -651,7 +684,7 @@ console.log("updateGraph() DATA:", data);
 				.tickSize(-width + padding.left - barWidth)
 				.tickSizeOuter(0)
 				.tickFormat(function(text) {
-					return d3.format("")(text);
+					return d3.format(".2s")(text);
 					})
 				)
 			;
@@ -660,27 +693,22 @@ console.log("updateGraph() DATA:", data);
 			.attr("x", -(height) / 2 - padding.bottom)
 			.text("Number of Donors")
 			;
-		}
+		}	// end else if
 
 	else if (radioRFM.M === true && radioMoney.avgPerDonor === true)
 		{
-		// use different yScale...
-		yScaleFreqAvgDonation
-			.domain( d3.extent(data, d => d.avgDonationPerDonor))
-			.range([height, padding.top])
-			;
+		// update yScale...
 		yScale
-			.domain( d3.extent(d => d.avgDonationPerDonor))
+			.domain( d3.extent(data, d => d.avgDonatedPerDonor * 1.1))
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
-			.call(yAxis			// yAxisFreqAvgDonation
+			.call(yAxis
 				.tickSize(-width + padding.left - barWidth)
 				.tickSizeOuter(0)
 				)
 			;
 		d3.select("#yAxis-label")
-			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
 			.attr("x", -(height) / 2 - padding.bottom)
 			.transition()
 			.duration(5000)
@@ -690,27 +718,22 @@ console.log("updateGraph() DATA:", data);
 
 	else if (radioRFM.M === true && radioMoney.avgDonation === true)
 		{
-		// use different yScale...
-		yScaleFreqAvgDonation
-			.domain( d3.extent(data, d => d.avgDonatedPerDonation))
-			.range([height, padding.top])
-			;
+		// update yScale...
 		yScale
-			.domain( d3.extent(d => d.avgDonatedPerDonation))
+			.domain( d3.extent(data, d => d.avgDonation * 1.1))
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
-			.call(yAxis			// yAxisFreqAvgDonation
+			.call(yAxis
 				.tickSize(-width + padding.left - barWidth)
 				.tickSizeOuter(0)
 				)
 			;
 		d3.select("#yAxis-label")
-			// .attr("x", -(height) / 2 - padding.top - padding.bottom)
 			.attr("x", -(height) / 2 - padding.bottom)
 			.transition()
 			.duration(5000)
-			.text("Average Donation Amount per Donation")
+			.text("Average Donation Amount")
 			;
 		} // end if radioRFM.M
 
@@ -738,33 +761,41 @@ console.log("updateGraph() DATA:", data);
 	rects = rects.merge(rects);
 
 	rects
-//		.merge(rects)
 		.transition()
 		.duration(1000)
 		.delay( (d,i) => i * 100)
 		.attr("fill", (d,index) => colourScale(d.score))
 		.attr("x", d => xScale(d.score) + barPadding / 2)
 		.attr("y", function( d) {
-			if ( (radioRFM.F === true && radioFreq.total === true)
+
+			if (radioRFM.R === true && radioRec.avgDaily === true)
+				{
+				return yScale(d.avgDaily) + padding.top;
+				}
+
+			else if ( (radioRFM.R === true && radioRec.total === true)
+				|| (radioRFM.F === true && radioFreq.total === true)
 				|| (radioRFM.M === true && radioMoney.total === true) )
 				{
 				return yScale( d.totalDonated) + padding.top;
 				}
-			else if ( (radioRFM.F === true && radioFreq.numDonors === true)
-					|| (radioRFM.M === true && radioMoney.numDonors === true) ) {
+			else if ( (radioRFM.R === true && radioRec.numDonors === true)
+					|| (radioRFM.F === true && radioFreq.numDonors === true)
+					|| (radioRFM.M === true && radioMoney.numDonors === true) )
+				{
 				return yScale(d.numDonors) + padding.top;
 				}
 			else if (radioRFM.F === true && radioFreq.average === true)
 				{
-				return yScale(d.avgDonation) + padding.top;
+				return yScale(d.avgNumDonations) + padding.top;
 				}
 			else if (radioRFM.M === true && radioMoney.avgPerDonor === true)
 				{
-				return yScale(d.avgDonatedPerDonor);
+				return yScale(d.avgDonatedPerDonor) + padding.top;
 				}
 			else if (radioRFM.M === true && radioMoney.avgDonation === true)
 				{
-				return yScale(d.avgDonatedPerDonation);
+				return yScale(d.avgDonation) + padding.top;
 				}
 			else if (radioRFM.M === true && radioMoney.total === true)
 				{
@@ -773,35 +804,40 @@ console.log("updateGraph() DATA:", data);
 			})
 		.attr("width", barWidth - barPadding)
 		.attr("height", function(d) {
-			if ( (radioRFM.F === true && radioFreq.total === true)
-					|| (radioRFM.M === true && radioMoney.total === true) ) {
+			if ( (radioRFM.R === true && radioRec.total === true)
+					|| (radioRFM.F === true && radioFreq.total === true)
+					|| (radioRFM.M === true && radioMoney.total === true) )
+				{
 				return height - yScale(d.totalDonated);
 				}
-			else if ( (radioRFM.F === true && radioFreq.numDonors === true)
-					|| (radioRFM.M === true && radioMoney.numDonors === true) ) {
+			else if ( (radioRFM.R === true && radioRec.numDonors === true)
+					|| (radioRFM.F === true && radioFreq.numDonors === true)
+					|| (radioRFM.M === true && radioMoney.numDonors === true) )
+				{
 				return height - yScale(d.numDonors);
+				}
+			else if (radioRFM.R === true && radioRec.avgDaily === true)
+				{
+				return height - yScale(d.avgDaily);
 				}
 			else if (radioRFM.F === true && radioFreq.average === true)
 				{
-				return height - yScale(d.avgDonation);
+				return height - yScale(d.avgNumDonations);
 				}
 			else if (radioRFM.M === true && radioMoney.avgPerDonor === true)
 				{
-				return height - yScale( d => d.avgDonationPerDonor);
+				return height - yScale( d.avgDonatedPerDonor);
+				}
+			else if (radioRFM.M === true && radioMoney.avgDonation === true)
+				{
+				return height - yScale( d.avgDonation);
 				}
 			})
 		.attr("stroke", "black")
 
 
 	setToolTip();
-/*
-	d3.selectAll("rect")
-		.on("mousemove", tooltipShow)
-		.on("touchstart", tooltipShow)
-		.on("mouseout", tooltipHide)
-		.on("touchend", tooltipHide)
-		;
-*/
+
 /*
 // TEMPORARY: test padding vs graph position: BREAKS SVG: rect - data:
 d3.select("svg")
@@ -850,31 +886,6 @@ d3.select("body")
 
 
 
-function setYearLabel(year = minYear) {
-	console.log(`YEAR: ${year}`)
-	// Range selector:
-	// Initialize upon loading:
-	d3.select("#year")
-		.text(`Displaying year ${year}`)
-		;
-	d3.select("#minYear")
-		.text(minYear)
-		;
-	d3.select("#maxYear")
-		.text(maxYear)
-		;
-	}
-
-
-
-
-
-
-
-
-
-
-
 
 function tooltipShow(data) {
 
@@ -891,6 +902,8 @@ function tooltipShow(data) {
 				`<p>Most Donated: $${data.mostDonated.toLocaleString(undefined, {minimumFractionDigits: 2} )}</p>` : "")
 		+ (data.avgDonation ?
 				`<p>Average Donation: $${data.avgDonation.toLocaleString(undefined, {minimumFractionDigits: 2} )}</p>` : "")
+		+ (data.avgNumDonations ?
+				`<p>Average Number of Donations: ${data.avgNumDonations.toLocaleString(undefined, {minimumFractionDigits: 2} )}</p>` : "")
 		+ (data.avgDonatedPerDonor ?
 				`<p>Average Donation per Donor: `
 			+ `$${data.avgDonatedPerDonor.toLocaleString(undefined, {minimumFractionDigits: 2} )}</p>` : "")
