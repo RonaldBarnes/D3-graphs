@@ -22,14 +22,12 @@ let data;
 let svg;
 // xScale & xAxis:
 let xScale;
-let xScale2;	// Unused: was to change bar widths based on X
 let xAxis;
 // yScale(s) and yAxis(es / yAxes):
 let yScale;
 let yAxis;
 // Green to red: green is better target:
 let colourScale;
-let numTotalDonors;
 
 // When switching graphs, have data stored so no fetching:
 let dataRecency;
@@ -60,6 +58,7 @@ let radioFreq = {
 let radioMoney = {
 	total: false,
 	numDonors: false,
+	most: false,
 	avgPerDonor: false,
 	avgDonation: false,
 	};
@@ -210,6 +209,8 @@ tmp.parentNode.style.backgroundColor = "hsl(222, 90%, 75%)";
 			.property("checked");
 		radioMoney.numDonors = d3.select("#moneyNumDonors")
 			.property("checked");
+		radioMoney.most = d3.select("#moneyMost")
+			.property("checked");
 		radioMoney.avgPerDonor = d3.select("#moneyAvgPerDonor")
 			.property("checked");
 		radioMoney.avgDonation = d3.select("#moneyAvgDonation")
@@ -218,6 +219,7 @@ tmp.parentNode.style.backgroundColor = "hsl(222, 90%, 75%)";
 		// If no sub-select button chosen, default is average donation:
 		if (radioMoney.total === false
 				&& radioMoney.numDonors === false
+				&& radioMoney.most === false
 				&& radioMoney.avgPerDonor === false
 				&& radioMoney.avgDonation === false) {
 			d3.select("#moneyTotalDonated")
@@ -720,11 +722,31 @@ function updateGraph() {
 			;
 		}	// end else if
 
+	else if (radioRFM.M === true && radioMoney.most === true)
+		{
+		// use original yScale... change domain & range:
+		yScale
+			.domain( [0, d3.max(data, d => d.mostDonated * 1.1) ])
+			.range([height, padding.top])
+			;
+		d3.select("#yAxis")
+			.call(yAxis
+				.tickSize(-width + padding.left - barWidth)
+				.tickSizeOuter(0)
+				.tickFormat( text => d3.format("$.2s")(text))
+				)
+			;
+		d3.select("#yAxis-label")
+			.attr("x", -(height) / 2 - padding.bottom)
+			.text("Most Donated (Amount?)")
+			;
+		}	// end else if
+
 	else if (radioRFM.M === true && radioMoney.avgPerDonor === true)
 		{
 		// update yScale...
 		yScale
-			.domain( d3.extent(data, d => d.avgDonatedPerDonor * 1.1))
+			.domain([ 0, d3.max(data, d => d.avgDonatedPerDonor * 1.1) ])
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
@@ -745,7 +767,7 @@ function updateGraph() {
 		{
 		// update yScale...
 		yScale
-			.domain( d3.extent(data, d => d.avgDonation * 1.1))
+			.domain([ 0, d3.max( data, d => d.avgDonation * 1.1) ])
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
@@ -826,6 +848,10 @@ function updateGraph() {
 				{
 				return yScale(d.totalDonated) + padding.top;
 				}
+			else if (radioRFM.M === true && radioMoney.most === true)
+				{
+				return yScale(d.mostDonated) + padding.top;
+				}
 			})
 		.attr("width", barWidth - barPadding)
 		.attr("height", function(d) {
@@ -848,6 +874,10 @@ function updateGraph() {
 			else if (radioRFM.F === true && radioFreq.average === true)
 				{
 				return height - yScale(d.avgNumDonations);
+				}
+			else if (radioRFM.M === true && radioMoney.most === true)
+				{
+				return height - yScale( d.mostDonated);
 				}
 			else if (radioRFM.M === true && radioMoney.avgPerDonor === true)
 				{
