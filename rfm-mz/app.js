@@ -357,7 +357,7 @@ function createSVG() {
 			.style("text-anchor", "middle")
 			// attr, not style, because CSS for media queries:
 			.attr("font-size", "1.5em")
-			.text("Recency / Frequency / Monetary Analysis")
+			.text("MicroZip Data: Recency / Frequency / Monetary Analysis")
 		;
 	return svg
 	}
@@ -430,12 +430,13 @@ window.addEventListener("resize", updateGraph );
 //
 // DisplayPixelRatio is > 1 on hiDPI (3.x on Pixel4a Firefox)
 //	Wrote media query CSS to handle this
+/*
 d3.select("#pixel")
 	.append("text")
 	.text(`devicePixelRatio: ${window.devicePixelRatio}`)
 	.style("font-size", "3em")
 	;
-
+*/
 
 
 // Initialize graph:
