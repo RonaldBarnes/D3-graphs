@@ -601,7 +601,7 @@ function updateGraph() {
 			.call(yAxis
 				.tickSize(-width + padding.left - barWidth)
 				.tickSizeOuter(0)
-				.tickFormat( text => d3.format("$.1s")(text))
+				.tickFormat( text => d3.format("$.2s")(text))
 				)
 			;
 		d3.select("#yAxis-label")
@@ -614,7 +614,7 @@ function updateGraph() {
 	if (radioRFM.R === true && radioRec.numDays === true)
 		{
 		yScale
-			.domain( [0, d3.max(data, d => d.numDays) * 1.1]  )
+			.domain( [0, d3.max(data, d => d.numDays) * 1]  )
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
@@ -654,7 +654,7 @@ function updateGraph() {
 	else if (radioRFM.R === true && radioRec.avgDaily === true)
 		{
 		yScale
-			.domain( [0, (d3.max(data, (d) => d.avgDaily) * 1.1) ] )
+			.domain( [0, (d3.max(data, (d) => d.avgDaily) * 1) ] )
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
@@ -676,7 +676,7 @@ function updateGraph() {
 		{
 		// use original yScale...
 		yScale
-			.domain( [0, (d3.max(data, (d) => d.totalDonated) * 1.1) ] )
+			.domain( [0, (d3.max(data, (d) => d.totalDonated) * 1.1) ])
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
@@ -697,7 +697,7 @@ function updateGraph() {
 		{
 		// use different yScale...
 		yScale
-			.domain( [0, d3.max(data, d => d.numDonors) * 1.1] )
+			.domain( [0, d3.max(data, d => d.numDonors) ])
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
@@ -718,7 +718,7 @@ function updateGraph() {
 		{
 		// use different yScale...
 		yScale
-			.domain( [0, d3.max(data, d => d.numDonations) * 1.1] )
+			.domain( [0, d3.max(data, d => d.numDonations) * 1.1 ])
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
@@ -737,7 +737,7 @@ function updateGraph() {
 	else if (radioRFM.F === true && radioFreq.average === true)
 		{
 		yScale
-			.domain( [0, d3.max(data, d => d.avgNumDonations * 1.1) ])
+			.domain( [0, d3.max(data, d => d.avgNumDonations )])
 			.range([height, padding.top])
 			;
 		d3.select("#yAxis")
