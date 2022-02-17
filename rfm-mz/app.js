@@ -1,10 +1,14 @@
-/*
-let width = 800;
-let height = 700;
-*/
+
+console.log("\n\n",
+	"--------------------------------------\n",
+	"Conceived, created, and copyright © by\n",
+	"ron@ronaldbarnes.ca 2022",
+	"--------------------------------------\n",
+	"\n\n"
+	);
+
 let width = getPageWidth();
 let height = getPageHeight();
-console.log(`WTH? WIDTH=${width} HEIGHT=${height}`);
 
 
 let padding = {
