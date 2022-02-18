@@ -11,32 +11,9 @@ console.log("\n\n",
 
 
 
-let padding = 25;
+let padding = 50;
 
-let {width, height} = makeSquare();
-
-function makeSquare() {
-	let width = getPageWidth();
-	let height = getPageHeight();
-	// Set size to square:
-	height = Math.min(width, height);
-	width = Math.min(width, height);
-/*
-	if (height < width)
-		{
-		width = height;
-		}
-	if (width < height)
-		{
-		height = width;
-		}
-*/
-	// console.log(`WIDTH: ${width}  HEIGHT: ${height}`);
-	return {
-		width: width,
-		height: height,
-		}
-	}
+let {width, height} = getSize();
 
 /*
 let padding = {
@@ -135,7 +112,7 @@ function makeGraph(year) {
 	let groupContinents =
 		d3.select("#groupContinents").property("checked");
 
-	let {width, height} = makeSquare();
+	let {width, height} = getSize();
 
 	// The beginning of a pie chart:
 	let arcs = d3.pie()
@@ -160,7 +137,7 @@ function makeGraph(year) {
 		;
 
 	let path = d3.arc()
-		.outerRadius( width / 2 - 2 * padding)
+		.outerRadius( width / 2 - padding)
 		// Positive innerRadius gives an annulus (donut):
 		.innerRadius(width / 6)
 		// pie.padAngle doesn't seem to work on d3.pie (above)
@@ -202,7 +179,7 @@ function makeGraph(year) {
 function updateGraph() {
 	console.log("updateGraph()");
 
-	let {width, height} = makeSquare();
+	let {width, height} = getSize();
 
 	d3.select("svg")
 		.attr("width", width)
@@ -236,6 +213,24 @@ function updateGraph() {
 //
 // For responsive design, listen to page resizing:
 window.addEventListener("resize", updateGraph );
+//
+// DisplayPixelRatio is > 1 on hiDPI (3.x on Pixel4a Firefox)
+//  Wrote media query CSS to handle this
+/*
+d3.select("#devicePixelRatio")
+.append("text")
+.text(`devicePixelRatio: ${window.devicePixelRatio}`)
+.style("font-size", "3rem")
+;
+*/
+if (window.devicePixelRatio > 1)
+	{
+	padding = padding * 2;
+	}
+
+
+
+
 
 // Set handler for tooltips:
 function setToolTip() {
@@ -255,10 +250,9 @@ svg
 	.append("text")
 		.attr("id", "title")
 		.attr("x", width / 2)
-		.attr("dy", "1.5em")
+		.attr("dy", "1.25em")
 		.style("text-anchor", "middle")
-		.style("font-size", "1.5em")
-		.text("Births by Country by Year")
+		.text("Births by Country & Year")
 	;
 
 
@@ -274,6 +268,9 @@ Array.from(continents).sort().forEach(function (c) {
 d3.select("#colour-legend")
 	.html(legend)
 	;
+
+
+
 
 
 // Add Tooltip div:
@@ -344,7 +341,7 @@ function getPageWidth() {
 	//
 	// Shrink it to leave some space around sides and make it
 	// an even number:
-	divWidth = Math.floor( divWidth / 100 - 2) * 100;
+	divWidth = Math.floor( divWidth / 100 ) * 100;
 	return divWidth;
 	}
 
@@ -357,7 +354,23 @@ function getPageHeight() {
 		|| document.body.clientHeight
 		;
 	// Shave some space off height for radios & make an even number:
-	tmpHeight = Math.floor(tmpHeight / 100 - 3) * 100;
+	tmpHeight = Math.floor(tmpHeight / 100 - 2) * 100;
 	// If screen too small (i.e. mobile landscape): set minimum size:
 	return tmpHeight < 400 ? 400 : tmpHeight;
+	}
+
+
+function getSize() {
+	let width = getPageWidth();
+	let height = getPageHeight();
+	// Set size to square:
+	height = Math.min(width, height);
+	width = Math.min(width, height);
+
+	// console.log(`WIDTH: ${width}  HEIGHT: ${height}`);
+	return {
+		width: width,
+		// Add padding to height so room for title:
+		height: height + padding,
+		}
 	}

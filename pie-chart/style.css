@@ -3,10 +3,17 @@ svg {
   display: block;
 }
 
-
 .tick line {
 	stroke: lightgray;
 	stroke-dasharray: 10,5;
+	}
+
+/* Label describing the colour legend */
+.legend {
+	display: block;
+	margin: 1rem auto;
+	font-size: 1.5rem;
+	text-align: center;
 	}
 
 #colour-legend {
@@ -18,7 +25,7 @@ svg {
 	*/
 	flex-wrap: wrap;
 	align-items: center;
-	width: 50vw;
+	width: 75vw;
 	text-align: center;
 	font-size: 1rem;
 	margin: 1rem auto;
@@ -28,36 +35,37 @@ svg {
 #colour-legend div {
 	flex-grow: 1;
 	flex-shrink: 1;
-	padding: 5px;
+	padding: 1rem;
 	}
 
+/* Entire range selector + labels: */
 #years {
 	display: flex;
 	justify-content: space-between;
-	width: 50vw;
+	width: 75vw;
 	margin: auto;
 	}
 
-#year {
+/* Title & "Displaying year ____ */
+#title, #year {
 	text-align: center;
-	font-size: 1.5rem;
+	font-size: 1.5em;
 	font-weight: bold;
 	}
 
 .range, .groupContinents {
 	display: block;
-	width: 50vw;
+	width: 75vw;
 	margin: 1rem auto;
 	text-align: center;
 	font-size: 1.5rem;
 	}
 
-.legend {
-	display: block;
-	margin: 1rem auto;
-	font-size: 1.5rem;
-	text-align: center;
+#minYear, #maxYear, .legend {
+	font-size: 1.25rem;
+	font-weight: normal;
 	}
+
 #tooltip, .tooltip {
 	opacity: 0;
 	position: absolute;
@@ -93,16 +101,40 @@ svg {
 	Text was illegible - too small - on mobile.
 	Set sizes larger at hiDPI:
 */
-@media (resolution >= 2dppx) {
+@media (min-resolution: 100dpi) {
+
+	body {
+		font-size: 5em;
+		}
 
 	#tooltip, .tooltip {
 		font-size: 3rem;
 		}
 
-	#xAxis-label, #yAxis-label, #title {
+	#title {
 		font-size: 3rem;
 		}
+
 	.tick > * {
 		font-size: 2rem;
+		}
+
+	#year {
+		text-align: center;
+		font-size: 3rem;
+		font-weight: bold;
+		}
+
+	#minYear, #maxYear, .legend {
+		font-size: 2.5rem;
+		font-weight: normal;
+		}
+
+	.colour-legend, #colour-legend {
+		font-size: 2rem;
+		}
+
+	.groupContinents {
+		font-size: 3rem;
 		}
 	}
