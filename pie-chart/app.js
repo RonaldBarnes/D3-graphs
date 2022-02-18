@@ -2,13 +2,54 @@
 // vsCodium here, via "fish" ssh file system on KDE!
 
 
+console.log("\n\n",
+	"--------------------------------------\n",
+	"© ron@ronaldbarnes.ca 2022\n",
+	"--------------------------------------\n",
+	"\n\n"
+	);
 
-let width = 600;
-let height = 700;
+
+
 let padding = 25;
+
+let {width, height} = makeSquare();
+
+function makeSquare() {
+	let width = getPageWidth();
+	let height = getPageHeight();
+	// Set size to square:
+	height = Math.min(width, height);
+	width = Math.min(width, height);
+/*
+	if (height < width)
+		{
+		width = height;
+		}
+	if (width < height)
+		{
+		height = width;
+		}
+*/
+	// console.log(`WIDTH: ${width}  HEIGHT: ${height}`);
+	return {
+		width: width,
+		height: height,
+		}
+	}
+
+/*
+let padding = {
+	top: 50,
+	right: 50,
+	bottom: 75,
+	left: 100
+	};
+*/
 let barPadding = 1;
 
-// let minYear = d3.min(birthData, d => d.year);
+
+
 let [minYear, maxYear] = d3.extent(birthData, d => d.year);
 // Initialize the chart to a median value, looks nicer:
 let startYear = minYear + (maxYear - minYear) / 2;
@@ -24,15 +65,6 @@ let continentsNames = {
 	SA: "South America"
 	};
 
-/*
-let continents = [];
-for (let i = 0; i < birthData.length; i++) {
-	let continent = birthData[i].continent;
-	if (continents.indexOf(continent) === -1) {
-		continents.push(continent);
-		}
-	}
-*/
 
 let colourScale = d3.scaleOrdinal()
 	.domain( continents )
@@ -52,8 +84,9 @@ d3.select("#graph")
 let svg = d3.select("svg");
 svg
 	.append("g")
+	.attr("id", "graph-centre")
 	.attr("transform",
-		`translate( ${width / 2}, 
+		`translate( ${width / 2},
 			${height / 2 + padding})`)
 	.classed("chart", true)
 	// .style("outline", "1px solid green")
@@ -79,7 +112,8 @@ d3.select("#groupContinents")
 // Set a variable to refer to in the arcs.sort():
 let groupContinents =
 	d3.select("#groupContinents").property("checked");
-console.log("CHECKBOX:", groupContinents);
+//console.log("CHECKBOX:", groupContinents);
+
 // Set change handler on checkbox:
 d3.select("#groupContinents")
 	.on("input", function (d) {
@@ -93,7 +127,7 @@ d3.select("#groupContinents")
 
 
 // Initialize graph:
-makeGraph(startYear);	
+makeGraph(startYear);
 
 function makeGraph(year) {
 	let yearData = birthData.filter( d => d.year === year);
@@ -101,12 +135,14 @@ function makeGraph(year) {
 	let groupContinents =
 		d3.select("#groupContinents").property("checked");
 
+	let {width, height} = makeSquare();
+
 	// The beginning of a pie chart:
 	let arcs = d3.pie()
 		.value(d => d.births)
 		// Sort by continent, grouping sections by colour:
 		.sort(function (a, b) {
-			console.log(`Group CONTINENTS:`,groupContinents)
+			// console.log(`Group CONTINENTS:`,groupContinents)
 			if (groupContinents) {
 				if (a.continent < b.continent) {
 					return -1
@@ -124,9 +160,9 @@ function makeGraph(year) {
 		;
 
 	let path = d3.arc()
-		.outerRadius( width / 2 - 10)
+		.outerRadius( width / 2 - 2 * padding)
 		// Positive innerRadius gives an annulus (donut):
-		.innerRadius(width / 4)
+		.innerRadius(width / 6)
 		// pie.padAngle doesn't seem to work on d3.pie (above)
 		// pie.padAngle: set padding between arcs
 		// arc.padAngle: set padding between arcs (again?)
@@ -140,11 +176,11 @@ function makeGraph(year) {
 		.data(arcs)
 		;
 	update
-		.exit()
+		.exit(function(d) { console.log(".exit()") })
 		.remove()
 		;
 	update
-		.enter()
+		.enter(function(d) {console.log(".enter()") })
 		.append("path")
 			.classed("arc", true)
 		.merge(update)
@@ -157,6 +193,49 @@ function makeGraph(year) {
 	setToolTip()
 	}
 	;
+
+
+
+
+
+// Responsive Design: if page changes size / orientation, redraw:
+function updateGraph() {
+	console.log("updateGraph()");
+
+	let {width, height} = makeSquare();
+
+	d3.select("svg")
+		.attr("width", width)
+		.attr("height", height)
+		;
+
+	d3.select("#graph-centre")
+		.attr("transform",
+			`translate( ${width / 2},
+				${height / 2 + padding})`)
+/*
+		.attr("x", width / 2 + padding)
+		.attr("y", height / 2 + padding)
+*/
+		;
+
+
+	d3.select("#title")
+		.attr("x", width / 2)
+		;
+
+	// clear chart for re-sizing:
+	// Not necessary if wanting transition from old to new size:
+	//d3.selectAll(".arc").remove();
+
+	makeGraph(Number(d3.select("input").property("value")));
+
+	}
+
+
+//
+// For responsive design, listen to page resizing:
+window.addEventListener("resize", updateGraph );
 
 // Set handler for tooltips:
 function setToolTip() {
@@ -174,6 +253,7 @@ function setToolTip() {
 // Add a graph title:
 svg
 	.append("text")
+		.attr("id", "title")
 		.attr("x", width / 2)
 		.attr("dy", "1.5em")
 		.style("text-anchor", "middle")
@@ -188,7 +268,7 @@ Array.from(continents).sort().forEach(function (c) {
 	legend += `<div style="background:${colourScale(c)}" `
 		+ `title="${continentsNames[c]}">`
 		+ `${c}: ${continentsNames[c]}</div>`;
-	console.log(`CONTINENT: ${c}=${continentsNames[c]}`)
+	// console.log(`CONTINENT: ${c}=${continentsNames[c]}`)
 	});
 // console.log(`LEGEND: ${legend}`)
 d3.select("#colour-legend")
@@ -236,15 +316,7 @@ function tooltipShow(data) {
 	// console.log("DATA:", data.data);
 
 	let tooltip = d3.select("#tooltip");
-/*
-	let retVal = `<h3>Median age range: ${data.x0} - ${data.x1}</h3>`
-		+ `<p>${data.length} countries:</p><ul>`;
-	data.map( d => {
-		// console.log(`RETVAL ${retVal} and "d.region" = `, d.region);
-		retVal += `<li>${d.region}</li>`;
-		});
-	retVal += "</ul>";
-*/
+
 	tooltip
 		.style("opacity", 1)
 		.style("top", `${d3.event.y - tooltip.node().offsetHeight / 2}px`)
@@ -261,4 +333,31 @@ function tooltipHide() {
 	d3.select("#tooltip")
 		.style("opacity", 0)
 		;
+	}
+
+
+
+
+
+function getPageWidth() {
+	let divWidth = window.innerWidth;
+	//
+	// Shrink it to leave some space around sides and make it
+	// an even number:
+	divWidth = Math.floor( divWidth / 100 - 2) * 100;
+	return divWidth;
+	}
+
+function getPageHeight() {
+	// GREAT example on stackoverflow:
+	// https://stackoverflow.com/questions/3437786/get-the-size-of-the-screen-current-web-page-and-browser-window
+	let tmpHeight = window.innerHeight
+		|| document.documentElement.clientHeight
+		|| window.screen.availHeight
+		|| document.body.clientHeight
+		;
+	// Shave some space off height for radios & make an even number:
+	tmpHeight = Math.floor(tmpHeight / 100 - 3) * 100;
+	// If screen too small (i.e. mobile landscape): set minimum size:
+	return tmpHeight < 400 ? 400 : tmpHeight;
 	}

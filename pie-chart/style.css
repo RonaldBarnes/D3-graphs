@@ -85,3 +85,24 @@ svg {
 	/* offset by ½ width of border element to centre it, top: 50% is START */
 	margin-top: -12px;
 	}
+
+
+
+
+/*
+	Text was illegible - too small - on mobile.
+	Set sizes larger at hiDPI:
+*/
+@media (resolution >= 2dppx) {
+
+	#tooltip, .tooltip {
+		font-size: 3rem;
+		}
+
+	#xAxis-label, #yAxis-label, #title {
+		font-size: 3rem;
+		}
+	.tick > * {
+		font-size: 2rem;
+		}
+	}
