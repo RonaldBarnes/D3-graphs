@@ -1,8 +1,25 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	}
+
+body {
+	margin: 10px 10px;
+	}
+
 svg {
   margin: 0 auto;
   display: block;
 }
 
+
+/* For testing mobile / hiDPI screens: production is display:none; or gone */
+#devicePixelRatio {
+	font-size: 3rem;
+	text-align: center;
+	color: green !important;
+	}
 
 .tick line {
 	stroke: lightgray;
@@ -97,4 +114,33 @@ svg {
 	border-right-color: red;
 	/* offset by ½ width of border element to centre it, top: 50% is START */
 	margin-top: -12px;
+	}
+
+
+
+
+
+/*
+	Text was illegible - too small - on mobile.
+	Set sizes larger at hiDPI:
+*/
+@media (resolution >= 2dppx) {
+
+	#tooltip, .tooltip, #years, #year, .legend, #colour-legend {
+		font-size: 3rem;
+		}
+
+	.axis-label, #title {
+		font-size: 3rem;
+		}
+
+	.tick > * {
+		font-size: 2rem;
+		}
+
+
+	#devicePixelRatio {
+		font-size: 5rem;
+		}
+
 	}

@@ -8,7 +8,12 @@ console.log("\n\n",
 
 
 
-let padding = 100;
+let padding = {
+	top: 50,
+	right: 50,
+	left: 100,
+	bottom: 100,
+	};
 
 let {width, height} = getSize();
 
@@ -23,6 +28,31 @@ let yearRange;
 let startYear;
 
 
+
+
+
+// Scales for x,y, circle (r)adius, and (f)ill colour:
+let xScale = d3.scaleLinear();
+let yScale = d3.scaleLinear();
+// Radius scale:
+let rScale = d3.scaleLinear()
+	.domain( [0,1] )
+	.range( [5,30] )
+	.clamp(true)
+	;
+// Colour scale:
+let fScale = d3.scaleLinear()
+	.domain( [0,100] )
+	.range( ["black", "green"] )
+	;
+
+let xAxis = d3.axisBottom(xScale);
+let yAxis = d3.axisLeft(yScale);
+
+
+
+
+// ---------------------------------------------------------------------------
 d3.queue()
 	.defer(d3.csv,
 		"./data/co2/API_EN.ATM.CO2E.KT_DS2_en_csv_v2.csv",
@@ -52,8 +82,7 @@ d3.queue()
 
 		minYear = Number(d3.min(Object.keys(yearObj)));
 		maxYear = Number(d3.max(Object.keys(yearObj)));
-//		maxYear = 2013;
-console.log(`MAX YEAR: ${maxYear}`);
+		// console.log(`MAX YEAR: ${maxYear}`);
 		yearRange = [minYear, maxYear];
 		//
 		// Initialize the chart to a median value, looks nicer:
@@ -70,6 +99,10 @@ console.log(`MAX YEAR: ${maxYear}`);
 	;
 
 
+
+
+
+// ----------------------------------------------------------------------------
 // Remove regional, etc. data not directly tied to a country:
 function formatter(row)
 	{
@@ -155,6 +188,8 @@ function formatter(row)
 
 
 
+
+// ----------------------------------------------------------------------------
 // COME ON, Matt - the explanation on this was TERRIBLE!
 // also, mentioning "you can use d3.nest" for 500ms isn't helpful
 //
@@ -206,6 +241,7 @@ function formatAllData(data)
 	}
 
 
+// ----------------------------------------------------------------------------
 // This deletes null values, which is good, BUT: it ignores missing keys!
 // An "if" has been added to fix that.
 function validRegion(year, d) {
@@ -232,18 +268,10 @@ function validRegion(year, d) {
 
 
 
-	// Colour scale:
-	let fScale = d3.scaleLinear()
-		.domain( [0,100] )
-		.range( ["black", "green"] )
-		;
-
-
+// ----------------------------------------------------------------------------
 // Append a new SVG:
 d3.select("#graph")
 	.append("svg")
-		.attr("width", width + 2 * padding)
-		.attr("height", height + 2 * padding)
 		.style("outline", "1px solid red")
 	;
 
@@ -253,49 +281,42 @@ let svg = d3.select("svg");
 svg
 	.append("g")
 	.attr("id", "x-axis")
-	.attr("transform", `translate(0, ${height + padding})`)
+	.attr("transform", `translate(0, ${height + padding.top})`)
 	.classed("x-axis", true)
+	.call(xAxis)
 	;
+// xAxis label:
+svg
+	.append("text")
+	.attr("text-anchor", "middle")
+	.classed("axis-label", true)
+	.attr("id", "x-axis-label")
+	.text("co2 emissions (kt per person)")
+	;
+
 
 // yAxis:
 svg
 	.append("g")
 	.attr("id", "y-axis")
 	.classed("y-axis", true)
-	.attr("transform", `translate(${padding}, 0)`)
 	;
-
-// xAxis label:
-svg
-	.append("text")
-	.attr("x", width / 2 + padding)
-	.attr("y", height + 2 * padding)
-	.attr("dy", "-1em")
-	.attr("text-anchor", "middle")
-	.classed("axis-label", true)
-	.text("co2 emissions (kt per person)")
-	;
-
 // yAxis label:
 svg
 	.append("text")
 	.attr("transform", "rotate(-90)")
-	.attr("x", -height / 2 - padding)
-	.attr("y", "1.50em")
 	.attr("text-anchor", "middle")
 	.classed("axis-label", true)
+	.attr("id", "y-axis-label")
 	.text("Methane emissions (kt co2 equivalent per person)")
 	;
 
 // Add a graph title:
 svg.append("text")
-	.attr("x", width / 2 + padding)
-	.attr("y", padding)
-	.attr("dy", -padding / 2)
 	.attr("text-anchor", "middle")
 	.attr("id", "title")
 	.classed("title", true)
-	.text("Emissions per capita")
+	// .text("Emissions per capita")
 	;
 
 
@@ -316,46 +337,97 @@ d3.select("#colour-legend")
 
 
 
+// Add a border around the graph (inside padding)
+// For checking alignments, etc.
+// NOTE: when very narrow window, xAxis is nowhere near right border!
+d3.select("svg")
+	.append("g")
+	.append("path")
+	.attr("id", "padding-border")
+	;
 
+
+
+
+// ----------------------------------------------------------------------------
 function makeGraph(year) {
-	// console.log(`makeGraph() year=${year}`);
+	// console.log(`makeGraph() year=`, year);
+
+	if (!parseInt(year))
+		{
+		year = d3.select(".range").property("value");
+		console.log(`makeGraph() year=${year} from range.value`);
+		}
+	console.log(`makeGraph() year=${year}`);
 
 	setYearLabel(year);
 
 	let data = yearObj[year];
 
+	let {width, height} = getSize();
+	console.log(`makeGraph() WIDTHxHEIGHT: ${width}x${height}`);
+	d3.select("svg")
+		// ADD padding to SVG's dimensions: makes scaling so much easier
+		// for calculations of axes' positions, etc.
+		.attr("width", width + padding.left + padding.right)
+		.attr("height", height + padding.top + padding.bottom)
+		;
 
 
-	let xScale = d3.scaleLinear()
+
+
+	xScale
 		.domain( d3.extent(data, d => d.co2 / d.population) )
-		.range( [padding * 1.5 , width + padding])
+		// Keep circles from overlaying axes by bumping padding:
+		.range( [padding.left * 1.25, width + padding.left] )
 		.clamp(true)
 		;
 
-// console.log(`ySCALE EXTENT: ${d3.extent( data, d => d.methane / d.population)}`);
-	let yScale = d3.scaleLinear()
-		.domain( d3.extent(data, d => d.methane / d.population) )
-		.range( [height + padding / 2, padding])
+	yScale
+		// .domain( d3.extent(data, d => d.methane / d.population) )
+		.domain( [0, d3.max(data, d => d.methane / d.population) ])
+		// Keep circles from overlaying axes by bumping padding:
+		// [BOTTOM,TOP] are the coordinates - STOP FORGETTING THIS
+		.range( [height + padding.top, padding.top * 1.5] )
 		.clamp(true)
 		;
 
-	// Radius scale:
-	let rScale = d3.scaleLinear()
-		.domain( [0,1] )
-		.range( [5,30] )
-		.clamp(true)
-		;
+
+
 
 	d3.select("#x-axis")
-		.call(d3.axisBottom(xScale))
+		.attr("transform",
+			`translate(0, ${height + padding.top + padding.bottom / 4})`)
+		.call(xAxis
+			.tickSize(-height)
+			.tickSizeOuter(0)
+			// .tickSizeInner(0)
+			)
+		;
+	d3.select("#x-axis-label")
+	.attr("x", width / 2 + padding.left)
+	.attr("y", height + padding.top + padding.bottom)
+	.attr("dy", "-1em")
 		;
 
 	d3.select("#y-axis")
-		.call(d3.axisLeft(yScale))
+		.attr("transform", `translate(${padding.left}, 0)`)
+		.call(yAxis
+			.tickSize(-width)
+			.tickSizeOuter(0)
+			)
+		;
+	d3.select("#y-axis-label")
+		.attr("x", -height / 2 - padding.top)
+		.attr("y", "1.50em")
 		;
 
 	d3.select("#title")
-		.text(`Methane vs co2 Emissions per Capita for ${year}`)
+		.attr("x", width / 2 + padding.left)
+		.attr("y", 0)	//padding.top / 2)
+		.attr("dy", "1.5rem")
+		// .text(`Methane vs co2 Emissions per Capita for ${year}`)
+		.text(`GHG Emissions for ${year}`)
 		;
 
 
@@ -391,6 +463,7 @@ function makeGraph(year) {
 			.attr("fill", d => fScale(d.renewable) )
 			.transition()
 			.duration(500)
+			.ease(d3.easeCircle)
 			.delay( (d,i) => i * 10)
 				.attr("r", d => rScale(d.urban / d.population) )
 			.attr("stroke", "red")
@@ -400,14 +473,17 @@ function makeGraph(year) {
 	update
 		.merge(update)
 			.transition()
-			.duration(500)
+			.duration(1000)
 			.delay( (d,i) => i * 10)
+			.ease(d3.easeCubic)
 			.attr("cx", d => xScale(d.co2 / d.population) )
 			.attr("cy", d => yScale(d.methane / d.population) )
 			.attr("fill", d => fScale(d.renewable) )
 			.attr("r", d => rScale(d.urban / d.population) )
 		;
 
+	// Green box boundary at padding during design:
+	// paddingBox();
 	}
 
 
@@ -418,6 +494,7 @@ function makeGraph(year) {
 
 
 
+// ----------------------------------------------------------------------------
 // Set handler for tooltips:
 function setToolTip() {
 	d3.selectAll("path")
@@ -435,6 +512,7 @@ function setToolTip() {
 
 
 
+// ----------------------------------------------------------------------------
 // Add Tooltip div:
 d3.select("body")
 	.append("div")
@@ -444,6 +522,7 @@ d3.select("body")
 
 
 
+// ----------------------------------------------------------------------------
 function setYearLabel(year = minYear) {
 	console.log(`YEAR: ${year}`)
 	// Range selector:
@@ -475,14 +554,80 @@ function setYearLabel(year = minYear) {
 
 
 
+// ----------------------------------------------------------------------------
+//
+// For responsive design, listen to page resizing:
+window.addEventListener("resize",
+	makeGraph
+//	makeGraph(d3.select(".range").property("value"))
+	);
+//
+//
+// DisplayPixelRatio is > 1 on hiDPI (3.x on Pixel4a Firefox)
+//	Wrote media query CSS to handle this
+/*
+d3.select("#pixel")
+	.append("text")
+	.text(`devicePixelRatio: ${window.devicePixelRatio}`)
+	.style("font-size", "3em")
+	;
+*/
+let dpr = window.devicePixelRatio;
+if (dpr > 1)
+	{
+	// padding = padding * 2;
+	paddint.top = padding.top * 2;
+	padding.left = padding.left * 2;
+	padding.bottom = padding.bottom * 2;
+	}
+/*
+	d3.select("#devicePixelRatio")
+		.append("text")
+		// fucking mobile is broken, both Firefox & Chrome, and whatever Android
+		// "default" thing:
+		// cannot compose an output string, just shows "devicePixelRation"
+		// no colon, no equals sign, no dPR value...
+		// Also, trying to get styles to take effect can be hit & miss.
+		// Too much time wasted on Responsive Design nonsense:
+		// axes & labels SOMETIMES overlay each other, and tweaking padding is
+		// meant to fix it, but suddenly... not a damned thing updates as it should
+		.text(`devicePixelRatio (dpr) = ${dpr}`)
+		.classed("devicePixelRatio", true)
+		;
+*/
+
+
+
+
+// ----------------------------------------------------------------------------
+// To assist alignment, put a box around the padding boundary:
+function paddingBox()
+	{
+	// For testing proportions, draw line around padding
+	// Note: a rect will prevent SVG from working since it'll have no data
+	d3.select("#padding-border")
+	//	.append("g")
+	//	.append("path")
+	//	.attr("id", "padding-border")
+		.attr("stroke", "green")
+		.attr("stroke-dasharray", "9,3")
+		.attr("fill", "transparent")
+		.style("opacity", 0.5)
+		.attr("d", `M ${padding.left},${padding.top} h ${width} `
+			+ `v ${height} `
+			+ `h ${-width} `
+			+ `v ${-height}`
+			)
+			;
+	}
 
 
 
 
 
 
+// ----------------------------------------------------------------------------
 function tooltipShow(d) {
-
 // console.log("DATA:", d);
 // console.log("tooltipShow() Y=", d3.event.y, "pageY=", d3.event.pageY);
 
@@ -503,8 +648,8 @@ function tooltipShow(d) {
 		.style("left", `${d3.event.x + 12}px`)
 		.style("z-index", 100)
 		.html(`<ul><li>Country: ${d.region}</li> `
+			+ `<li>co2 per capita: ${(d.co2 / d.population).toFixed(4)}</li> `
 			+ `<li>Methane per capita: ${(d.methane / d.population).toFixed(4)}</li>`
-			+ `<li>co2 per capita: ${(d.co2 / d.population).toFixed(4)}</li>`
 			+ ` <li>Renewable energy: ${renewable}</li> `
 			+ `<li>Urban population: ${(d.urban / d.population * 100).toFixed(2)}%</li>`
 			)
@@ -513,6 +658,7 @@ function tooltipShow(d) {
 
 
 
+// ----------------------------------------------------------------------------
 function tooltipHide() {
 	d3.select("#tooltip")
 		.style("opacity", 0)
@@ -522,6 +668,7 @@ function tooltipHide() {
 
 
 
+// ----------------------------------------------------------------------------
 function getSize() {
 	let width = getPageWidth();
 	let height = getPageHeight();
@@ -539,15 +686,21 @@ function getSize() {
 }
 
 
+// ----------------------------------------------------------------------------
 function getPageWidth() {
 	let divWidth = window.innerWidth;
 	//
 	// Shrink it to leave some space around sides and make it
 	// an even number:
-	divWidth = Math.floor( divWidth / 100 ) * 100 - 2 * padding;
+	// Also, add padding.left & .right back to SVG so "width" is INSIDE padding
+	divWidth = Math.floor( 
+		(divWidth - padding.left - padding.right) / 100 )
+		* 100
+		;
 	return divWidth;
 	}
 
+// ----------------------------------------------------------------------------
 function getPageHeight() {
 	// GREAT example on stackoverflow:
 	// https://stackoverflow.com/questions/3437786/get-the-size-of-the-screen-cur>
@@ -557,7 +710,11 @@ function getPageHeight() {
 	|| document.body.clientHeight
 	;
 	// Shave some space off height for radios & make an even number:
-	tmpHeight = Math.floor(tmpHeight / 100 - 4) * 100;
+	tmpHeight = Math.floor(
+		(tmpHeight - padding.top - padding.bottom) / 100 - 2)
+		* 100
+		;
 	// If screen too small (i.e. mobile landscape): set minimum size:
+console.log(`getPageHeight() HEIGHT: ${tmpHeight}`);
 	return tmpHeight < 400 ? 400 : tmpHeight;
 	}
