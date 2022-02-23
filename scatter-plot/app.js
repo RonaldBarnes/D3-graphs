@@ -580,7 +580,7 @@ if (dpr > 1)
 	padding.left = padding.left * 2;
 	padding.bottom = padding.bottom * 2;
 	}
-/*
+
 	d3.select("#devicePixelRatio")
 		.append("text")
 		// fucking mobile is broken, both Firefox & Chrome, and whatever Android
@@ -594,7 +594,7 @@ if (dpr > 1)
 		.text(`devicePixelRatio (dpr) = ${dpr}`)
 		.classed("devicePixelRatio", true)
 		;
-*/
+
 
 
 
