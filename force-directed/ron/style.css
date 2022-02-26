@@ -1,0 +1,68 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	}
+
+svg {
+	margin: 0 auto;
+	outline: 1px solid red;
+	}
+
+#graph {
+	display: flex;
+	flex-direction: row;
+	gap: 0.5rem;
+	justify-content: space-between;
+	white-space: nowrap;
+	}
+
+/*
+#checkboxes {
+	display: inline-block;
+	vertical-align: top;
+	}
+*/
+
+h2, h3 {
+	text-align: center;
+	}
+
+.links line {
+	stroke: #999;
+	stroke-opacity: 0.6;
+	}
+
+#tooltip {
+	opacity: 0;
+	position: absolute;
+	/*
+	Bars still lie below axis ticks: okay, but affects tooltip
+	z-index: 1000;
+	*/
+	background-color: cornflowerblue;
+	color: black;
+	pointer-events: none;
+	border: 2px solid red;
+	border-radius: 8px;
+	padding: 1rem;
+	}
+
+#tooltip ul li {
+	/* Reduce spacing on data in tooltip: */
+	line-height: 1.5em;
+	padding-right: 2rem;
+	font-size: 1.25rem;
+	}
+
+#tooltip::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	/* Bring pointer outside left-side-tooltip via border*2 */
+	left: -24px;
+	border: 12px solid transparent;
+	border-right-color: red;
+	/* offset by ½ width of border element to centre it, top: 50% is START */
+	margin-top: -12px;
+	}
