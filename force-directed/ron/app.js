@@ -23,9 +23,9 @@ d3.select("#graph")
 		.attr("width", width)
 		.attr("height", height)
 	;
-
-
 let svg = d3.select("svg");
+
+
 let nodes;
 let nodeGroup;
 let links;
@@ -33,6 +33,26 @@ let linkGroup;
 let simulation;
 // Can be scoped inside d3.csv
 // let committees;
+let parties =
+	[
+		{
+		code: "D",
+		name: "Democratic"
+		},
+		{
+		code: "R",
+		name: "Republican"
+		},
+		{
+		code: "I",
+		name: "Independent"
+		}
+	];
+let partyScale = d3.scaleOrdinal()
+//	.domain( ["D", "R", "I"] )
+	.domain( parties.map( p => p.code) )
+	.range( ["blue", "red", "grey"] )
+	;
 
 
 
@@ -131,10 +151,6 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 // ----------------------------------------------------------------------------
 function updateGraph(nodeData, linkData)
 	{
-	let partyScale = d3.scaleOrdinal()
-		.domain( ["D", "R", "I"] )
-		.range( ["blue", "red", "grey"] )
-		;
 	let nodeUpdate = nodeGroup
 		.selectAll("circle")
 		.data(nodeData, d => d.name)
@@ -313,6 +329,22 @@ function createCheckBoxes(committees)
 					;
 				simulation.alpha(0.5).restart();
 				})	// end "on"
+		;
+	let legend = "<h3>Parties Legend:</h3><div id='legend'>";
+	// partyScale.domain().map( p => {
+	parties.map( p => {
+		legend += `<div style="background: `;
+		legend += partyScale(p.code);
+		legend += ';">';
+		legend += p.name;
+		legend += "</div>";
+		});
+	legend += "</div>";
+	console.log("LEGEND:", legend);
+	d3.select("#checkboxes")
+		.append("html")
+		// .attr("id", "parties-legend")
+		.html(legend)
 		;
 	}	// end createCheckBoxes
 
