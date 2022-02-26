@@ -340,7 +340,7 @@ function createCheckBoxes(committees)
 		legend += "</div>";
 		});
 	legend += "</div>";
-	console.log("LEGEND:", legend);
+	// console.log("LEGEND:", legend);
 	d3.select("#checkboxes")
 		.append("html")
 		// .attr("id", "parties-legend")
