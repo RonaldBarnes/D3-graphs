@@ -1,10 +1,10 @@
 
 console.log("\n\n",
-"--------------------------------------\n",
-"© ron@ronaldbarnes.ca 2022\n",
-"--------------------------------------\n",
-"\n\n"
-);
+	"--------------------------------------\n",
+	"© ron@ronaldbarnes.ca 2022\n",
+	"--------------------------------------\n",
+	"\n\n"
+	);
 
 
 
@@ -16,7 +16,10 @@ let padding = {
 	};
 
 let {width, height} = getSize();
-
+//width = d3.select("#graph").attr("width") - d3.select("#checkboxes").attr("width");
+// Checkboxes are ⅓ screen width (33vw), give rest to SVG:
+width = width / 3 * 2;
+// console.log(`WIDTH: ${width}`);
 
 d3.select("#graph")
 	.append("svg")
@@ -101,7 +104,8 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 			d3.forceManyBody().strength(-75)
 			)
 		.force("centre",
-			d3.forceCenter( width/2 + padding.left, height / 2 + padding.top)
+//			d3.forceCenter( width/2 + padding.left, height / 2 + padding.top)
+			d3.forceCenter( width/2, height / 2)
 			)
 		.force("links", d3.forceLink(links)
 			.distance( d => {

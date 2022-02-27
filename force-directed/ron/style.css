@@ -12,13 +12,25 @@ svg {
 #graph {
 	display: flex;
 	flex-direction: row;
+	flex-wrap: wrap;
 	gap: 0.5rem;
 	justify-content: space-between;
-	white-space: nowrap;
+	}
+
+
+#checkboxes {
+	width: 33vw;
+	outline: 1px solid green;
+	white-space: wrap;
+	}
+#checkboxes > div:nth-of-type(odd) {
+	background: hsl(211, 50%, 90%);
+	}
+#checkboxes > div:nth-of-type(even) {
+	background: hsl(111, 50%, 90%);
 	}
 
 /*
-#checkboxes {
 	display: inline-block;
 	vertical-align: top;
 	}
