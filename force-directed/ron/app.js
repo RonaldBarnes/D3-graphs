@@ -173,6 +173,7 @@ function updateGraph(nodeData, linkData)
 	nodeUpdate
 		.enter()
 			.append("circle")
+.merge(nodeUpdate)
 /*
 				// WHAT?!? Including transition here makes d3.drag() fail below?!?
 				// d3.v4.js:754 Uncaught Error: unknown type: mousedown
@@ -180,7 +181,6 @@ function updateGraph(nodeData, linkData)
 				.transition()
 				.duration(500)
 				.delay( (d,i) => i * 150)
-
 			.attr("r", 0)
 			.transition()
 			.duration(500)
