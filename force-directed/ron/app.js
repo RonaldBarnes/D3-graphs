@@ -14,7 +14,8 @@ let padding = {
 	left: 50,
 	bottom: 50,
 	};
-
+// Node / circle radius increases as multiple of pixelsPerCommittee:
+let pixelsPerCommittee = 10;
 let {width, height} = getSize();
 //width = d3.select("#graph").attr("width") - d3.select("#checkboxes").attr("width");
 // Checkboxes are ⅓ screen width (33vw), give rest to SVG:
@@ -100,8 +101,13 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 		.classed("nodes", true)
 		;
 	simulation = d3.forceSimulation(nodes)
-		.force("charge",
+		.force("repel",
 			d3.forceManyBody().strength(-50)
+			)
+		.force("collision-avoidance",
+			d3.forceCollide().radius( function(d) {
+				return d.committees.length * pixelsPerCommittee
+				})
 			)
 		.force("centre",
 //			d3.forceCenter( width/2 + padding.left, height / 2 + padding.top)
@@ -175,7 +181,7 @@ function updateGraph(nodeData, linkData)
 				.transition()
 				.duration(500)
 				.delay((d,i) => i * 10)
-				.attr("r", d => d.committees.length * 10)
+				.attr("r", d => d.committees.length * pixelsPerCommittee)
 				.transition()
 				.duration(500)
 				.attr("fill", d => partyScale(d.party))
@@ -208,7 +214,7 @@ function updateGraph(nodeData, linkData)
 			.attr("r", d => d.committees.length * 10)
 			.attr("fill", "black")
 */
-				.attr("r", d => d.committees.length * 10)
+				.attr("r", d => d.committees.length * pixelsPerCommittee)
 				.attr("fill", d => partyScale(d.party))
 				.attr("stroke", "white")
 				.attr("stroke-width", 3)
