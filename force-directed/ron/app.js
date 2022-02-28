@@ -102,11 +102,12 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 		;
 	simulation = d3.forceSimulation(nodes)
 		.force("repel",
-			d3.forceManyBody().strength(-50)
+			d3.forceManyBody().strength(-75)
 			)
 		.force("collision-avoidance",
 			d3.forceCollide().radius( function(d) {
-				return d.committees.length * pixelsPerCommittee
+//				return d.committees.length * pixelsPerCommittee
+return nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
 				})
 			)
 		.force("centre",
@@ -118,7 +119,7 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 			// Spread out distance of senators on multiple committees for legibility:
 				let count1 = d.source.committees.length;
 				let count2 = d.target.committees.length;
-				return 30 * Math.max(count1, count2);
+				return 20 * Math.max(count1, count2);
 				}) // end .distance
 			.id( d => d.name)
 			)	// end forceLink
@@ -129,11 +130,15 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 					.attr("y1", d => d.source.y)
 					.attr("x2", d => d.target.x)
 					.attr("y2", d => d.target.y)
+			.attr("title", function(d) {
+// console.log("linkUpdate.enter() d:", d);
+return d.source.name + " " + d.target.name
+})
 				;
 			nodeGroup
 				.selectAll("circle")
-					.attr("cx", d => d.x)
-					.attr("cy", d => d.y)
+					.attr("cx", d => d.x > width ? width : (d.x < 0 ? 0 : d.x) )
+					.attr("cy", d => d.y > height ? height : (d.y < 0 ? 0 : d.y) )
 				;
 			})	// end "on tick"
 	updateGraph(nodes,links);
@@ -170,7 +175,10 @@ function updateGraph(nodeData, linkData)
 			.duration(250)
 			.delay( (d,i) => i * 25)
 			// Shrink 'til disappeared:
-			.attr("r", 0)
+			.attr("r", function(d) {
+// console.log("EXIT() d:", d);
+				return 0;
+				})
 			.remove()
 		;
 
@@ -181,7 +189,10 @@ function updateGraph(nodeData, linkData)
 				.transition()
 				.duration(500)
 				.delay((d,i) => i * 10)
-				.attr("r", d => d.committees.length * pixelsPerCommittee)
+//				.attr("r", d => d.committees.length * pixelsPerCommittee)
+				.attr("r", d =>
+nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
+)
 				.transition()
 				.duration(500)
 				.attr("fill", d => partyScale(d.party))
@@ -214,7 +225,10 @@ function updateGraph(nodeData, linkData)
 			.attr("r", d => d.committees.length * 10)
 			.attr("fill", "black")
 */
-				.attr("r", d => d.committees.length * pixelsPerCommittee)
+//				.attr("r", d => d.committees.length * pixelsPerCommittee)
+				.attr("r", d =>
+nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
+)
 				.attr("fill", d => partyScale(d.party))
 				.attr("stroke", "white")
 				.attr("stroke-width", 3)
@@ -242,7 +256,10 @@ function updateGraph(nodeData, linkData)
 	linkUpdate
 		.enter()
 			.append("line")
-			.attr("title", d => d.source.name + " " + d.target.name)
+			.attr("title", function(d) {
+// console.log("linkUpdate.enter() d:", d);
+return d.source.name + " " + d.target.name
+})
 		;
 	}
 
@@ -253,6 +270,8 @@ function updateGraph(nodeData, linkData)
 
 // ----------------------------------------------------------------------------
 // Matt gets 1021 array elements returned, I'm getting 688!?!
+// Found some clues: Jon Tester, Mike Enzi, Risch are not getting enough / any
+// links...
 function makeLinks(nodes)
 	{
 	let links = [];
@@ -271,11 +290,24 @@ function makeLinks(nodes)
 				let committee = senator1.committees[k];
 				// senator1's current committee exist in list of sen2's membership?
 				if ( senator2.committees.includes(committee) )
+					{
 					links.push({
 						source: senator1.name,
 						target: senator2.name
 						});
+/*
+						if ( (`${senator1.name} ${senator2.name}`).includes("Tester")
+						// Johnny Isakson is on Veterans' Affairs with Jon Tester but... NO LINK
+						//		|| (`${senator1.name} ${senator2.name}`).includes("Johnny Isakson")
+						//		|| (`${senator1.name} ${senator2.name}`).includes("Risch")
+						//		|| (`${senator1.name} ${senator2.name}`).includes("Enzi")
+								)
+							{
+							console.log(`LINK: ${senator1.name} ${senator2.name}`);
+							}	// end if Tester, ...
+*/
 					break;
+					}
 				}	// end for k...
 			}	// end for j...
 		}	// end for i...
@@ -302,7 +334,12 @@ function createCheckBoxes(committees)
 			// .property didn't activate the checkboxes, had to use .attr:
 			.property("for", d => d)
 			.attr("for", d => d)
-			.text(d => d)
+			.text(d => {
+				// Show count of committee members in label, map over all nodes:
+				return d + " (" + nodes.map(n =>
+					// filter on matching committees and count (.length):
+					n.committees).filter(c => c.includes(d)).length + ")";
+				})
 		;
 	boxes
 		.append("input")
@@ -422,8 +459,10 @@ d3.select("body")
 // ----------------------------------------------------------------------------
 function tooltipShow(d) {
 // console.log("DATA:", d);
-console.log("tooltipShow() X=", d3.event.x, "pageX=", d3.event.pageX,
+/*
+ console.log("tooltipShow() X=", d3.event.x, "pageX=", d3.event.pageX,
 	"Y=", d3.event.y, "pageY=", d3.event.pageY);
+*/
 
 	let tooltip = d3.select("#tooltip");
 	let posTop;
