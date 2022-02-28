@@ -21,7 +21,6 @@ svg {
 #checkboxes {
 	width: 33vw;
 	outline: 1px solid green;
-	white-space: wrap;
 	}
 #checkboxes > div:nth-of-type(odd) {
 	background: hsl(211, 50%, 90%);
@@ -30,13 +29,7 @@ svg {
 	background: hsl(111, 50%, 90%);
 	}
 
-/*
-	display: inline-block;
-	vertical-align: top;
-	}
-*/
-
-h2, h3 {
+h2, h3, h4 {
 	text-align: center;
 	}
 
@@ -71,7 +64,7 @@ h2, h3 {
 	pointer-events: none;
 	border: 2px solid black;
 	border-radius: 8px;
-	padding: 1rem;
+	padding: 0rem;
 	}
 
 #tooltip ul li {

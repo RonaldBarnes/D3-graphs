@@ -101,7 +101,7 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 		;
 	simulation = d3.forceSimulation(nodes)
 		.force("charge",
-			d3.forceManyBody().strength(-75)
+			d3.forceManyBody().strength(-50)
 			)
 		.force("centre",
 //			d3.forceCenter( width/2 + padding.left, height / 2 + padding.top)
@@ -112,7 +112,7 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 			// Spread out distance of senators on multiple committees for legibility:
 				let count1 = d.source.committees.length;
 				let count2 = d.target.committees.length;
-				return 25 * Math.max(count1, count2);
+				return 30 * Math.max(count1, count2);
 				}) // end .distance
 			.id( d => d.name)
 			)	// end forceLink
@@ -131,11 +131,9 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 				;
 			})	// end "on tick"
 	updateGraph(nodes,links);
-	// HOW does this (columns) work?!?
-	// We're passing all columns except first 2 (skip 0 & 1, start at 2):
+	// Pass all columns except first 2 (skip 0 & 1, start at 2):
 	// But, ONLY the headers, not data.
-	// Again, WHERE does "columns" come from?!?
-	// Oh, from d3.csv: returns array of rows and a columns object with headers.
+	// "columns" from d3.csv: returns rows and a columns object with headers.
 	createCheckBoxes(nodes.columns.slice(2));
 	});	// end d3.csv
 
@@ -173,23 +171,42 @@ function updateGraph(nodeData, linkData)
 	nodeUpdate
 		.enter()
 			.append("circle")
-.merge(nodeUpdate)
-/*
-				// WHAT?!? Including transition here makes d3.drag() fail below?!?
-				// d3.v4.js:754 Uncaught Error: unknown type: mousedown
-				// All permutations of transitions fail: radius, fill, ...
+				.attr("r", 0)
 				.transition()
 				.duration(500)
-				.delay( (d,i) => i * 150)
+				.delay((d,i) => i * 10)
+				.attr("r", d => d.committees.length * 10)
+				.transition()
+				.duration(500)
+				.attr("fill", d => partyScale(d.party))
+				.attr("stroke", "white")
+				.attr("stroke-width", 3)
+		;
+	// Required splitting this from .enter() due to error on transitions:
+	// d3.v4.js:754 Uncaught Error: unknown type: mousedown
+	d3.select("#nodeGroup")
+		.selectAll("circle")
+			.call(d3.drag()
+					.on("start", dragStart)
+					.on("drag", dragDrag)
+					.on("end", dragEnd)
+					)
+				.on("mousemove touchstart", tooltipShow)
+				.on("mouseout touchend", tooltipHide)
+		;
+
+	nodeUpdate
+		.merge(nodeUpdate)
+/*
+				// Including transition here makes d3.drag() fail below?!?
+				// d3.v4.js:754 Uncaught Error: unknown type: mousedown
+				// All permutations of transitions fail: radius, fill, ...
 			.attr("r", 0)
 			.transition()
 			.duration(500)
 			.delay((d,i) => i * 10)
-				.attr("r", d => d.committees.length * 10)
-				.attr("fill", "black")
-			.transition()
-			.duration(500)
-			.delay((d,i) => i * 10)
+			.attr("r", d => d.committees.length * 10)
+			.attr("fill", "black")
 */
 				.attr("r", d => d.committees.length * 10)
 				.attr("fill", d => partyScale(d.party))
@@ -334,7 +351,8 @@ function createCheckBoxes(committees)
 				simulation.alpha(0.5).restart();
 				})	// end "on"
 		;
-	let legend = "<h3>Parties Legend:</h3><div id='legend'>";
+	//
+	let legend = "";	//"<h4>Parties Legend:</h4><div id='legend'>";
 	// partyScale.domain().map( p => {
 	parties.map( p => {
 		legend += `<div style="background: `;
@@ -346,8 +364,10 @@ function createCheckBoxes(committees)
 	legend += "</div>";
 	// console.log("LEGEND:", legend);
 	d3.select("#checkboxes")
-		.append("html")
-		// .attr("id", "parties-legend")
+		.append("h4")
+		.text("Parties Legend:")
+		.append("div")
+		.attr("id", "legend")
 		.html(legend)
 		;
 	}	// end createCheckBoxes
@@ -417,21 +437,32 @@ function tooltipShow(d) {
 	tooltip
 		// d3.event.y vs d3.event.pageY are different on Firefox & Chromium:
 		// tooltipShow() Y= 351 pageY= 443
-		// .style("top", `${d3.event.pageY - tooltip.node().offSetHeight / 2}px`)
+		//
 		// TRANSITION on position caused tooltip to stick to bottom-left corner
 		// of page. Debugger pausing on these lines made it work... "WTH?!?"
+		//
+		// Note: there were permutations where the tooltip div would transition
+		// across the screen into place, but those always ended up with empty
+		// divs due to errors.
+		//
+		// Uncommenting the transition on "top" & "left" below has STRANGE
+		// behaviour: constantly moving over nodes causes it to very slowly move
+		// towards the mouse cursor. Maybe 10px up & right each invocation. "?!?"
+		//
 		// Removing transition makes it work again...
+		//
+		// AND, further testing: switching duration from 250 to 10 makes it work
+		// mostly as expected.
 		// .transition()
-		// .duration(250)
+		// .duration(10)		// 250)
 		.style("top", `${d3.event.pageY - tooltip.node().offsetHeight / 2}px`)
 		.style("left", `${d3.event.x + 12}px`)
-//		.style("z-index", 100)
 		;
 	// Had to break up these into separate segments, else transition failed
 	// EVERY TIME, no matter how / where I placed the statement:
 	tooltip
 		.transition()
-		.duration(250)
+		.duration(150)
 		.style("opacity", 1)
 		;
 	// This also had to be separated to make the transition work...
@@ -445,6 +476,9 @@ function tooltipShow(d) {
 // ----------------------------------------------------------------------------
 function tooltipHide() {
 	d3.select("#tooltip")
+		.transition()
+		.duration(500)
+		.style("top", `-200px`)
 		.transition()
 		.duration(500)
 		.style("opacity", 0)
