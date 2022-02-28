@@ -384,6 +384,13 @@ function dragEnd(d)
 
 
 
+// ----------------------------------------------------------------------------
+// Create tooltip div:
+d3.select("body")
+	.append("div")
+		.attr("id", "tooltip")
+	;
+
 
 
 // ----------------------------------------------------------------------------
@@ -408,13 +415,27 @@ function tooltipShow(d) {
 	html += "</ul></ul>";
 
 	tooltip
-		.style("opacity", 1)
 		// d3.event.y vs d3.event.pageY are different on Firefox & Chromium:
 		// tooltipShow() Y= 351 pageY= 443
 		// .style("top", `${d3.event.pageY - tooltip.node().offSetHeight / 2}px`)
+		// TRANSITION on position caused tooltip to stick to bottom-left corner
+		// of page. Debugger pausing on these lines made it work... "WTH?!?"
+		// Removing transition makes it work again...
+		// .transition()
+		// .duration(250)
 		.style("top", `${d3.event.pageY - tooltip.node().offsetHeight / 2}px`)
 		.style("left", `${d3.event.x + 12}px`)
-		.style("z-index", 100)
+//		.style("z-index", 100)
+		;
+	// Had to break up these into separate segments, else transition failed
+	// EVERY TIME, no matter how / where I placed the statement:
+	tooltip
+		.transition()
+		.duration(250)
+		.style("opacity", 1)
+		;
+	// This also had to be separated to make the transition work...
+	tooltip
 		.html(html)
 		;
 	}
@@ -424,6 +445,8 @@ function tooltipShow(d) {
 // ----------------------------------------------------------------------------
 function tooltipHide() {
 	d3.select("#tooltip")
+		.transition()
+		.duration(500)
 		.style("opacity", 0)
 		;
 	}
