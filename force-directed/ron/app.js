@@ -422,9 +422,31 @@ d3.select("body")
 // ----------------------------------------------------------------------------
 function tooltipShow(d) {
 // console.log("DATA:", d);
-// console.log("tooltipShow() Y=", d3.event.y, "pageY=", d3.event.pageY);
+console.log("tooltipShow() X=", d3.event.x, "pageX=", d3.event.pageX,
+	"Y=", d3.event.y, "pageY=", d3.event.pageY);
 
 	let tooltip = d3.select("#tooltip");
+	let posTop;
+	let posLeft;
+	// Default position for tooltip is to right of node circle:
+	let tooltipClass;
+	// Use different class if node circle is to right side of graph:
+	// We're given the x-offset as a position within window, need to remove
+	// width of checkboxes div to get approximate position within SVG:
+	if (d3.event.x - d3.select("#checkboxes").property("clientWidth") > width / 2)
+		{
+		// Show tooltip to LEFT of node circle:
+		tooltipClass = "tooltipLeft";
+		posTop = d3.event.pageY - tooltip.node().offsetHeight / 2;
+		posLeft = d3.event.x - tooltip.node().offsetWidth - 12;
+		}
+	else
+		{
+		// Show tooltip to RIGHT of node circle:
+		tooltipClass = "tooltipRight";
+		posTop = d3.event.pageY - tooltip.node().offsetHeight / 2;
+		posLeft = d3.event.x + 12;
+		}
 
 	let html = `<ul><li>Name: ${d.name} (${d.party})</li> `
 		+ `<li>Committees:</li><ul> `
@@ -461,8 +483,13 @@ function tooltipShow(d) {
 		// mostly as expected.
 		// .transition()
 		// .duration(10)		// 250)
-		.style("top", `${d3.event.pageY - tooltip.node().offsetHeight / 2}px`)
-		.style("left", `${d3.event.x + 12}px`)
+		.style("top", `${posTop}px`)
+		.style("left", `${posLeft}px`)
+		// Classes accumulate: remove all previous ones:
+		.classed("tooltipLeft", false)
+		.classed("tooltipRight", false)
+		// Now, reapply only the current one based on position of mouse cursor:
+		.classed(tooltipClass, true)
 		;
 	// Had to break up these into separate segments, else transition failed
 	// EVERY TIME, no matter how / where I placed the statement:
