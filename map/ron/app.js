@@ -78,6 +78,7 @@ d3.queue()
 				.on("mouseout touchend", tooltipHide)
 				.classed("country", true)
 				.attr("d", path)
+				.attr("id", d => `cc${d.properties.countryCode}`)
 			;
 
 
@@ -288,6 +289,7 @@ function changeProjection(proj = d3.select("#projection").property("value") )
 		d3.select("svg")
 			.selectAll("path")
 				.attr("d", path)
+				.attr("id", d => `cc${d.properties.countryCode}`)
 			;
 	}
 
@@ -372,6 +374,7 @@ d3.select("body")
 // ----------------------------------------------------------------------------
 function tooltipShow(d) {
 	// console.log("DATA:", d.properties);
+console.log("DATA:", d);
 	// console.log("tooltipShow() Y=", d3.event.y, "pageY=", d3.event.pageY);
 
 	let tooltip = d3.select("#tooltip");
@@ -381,6 +384,10 @@ function tooltipShow(d) {
 		country, fertilityRate, medianAge, population, populationDensity
 		} = d.properties;
 
+d3.select(`#cc${d.properties.countryCode}`)
+	.style("stroke", "black")
+	.style("stroke-width", "2px")
+	;
 
 	let html;
 	if (Object.keys(d.properties).length === 0)
@@ -400,21 +407,30 @@ function tooltipShow(d) {
 		}
 
 	tooltip
-		.style("opacity", 1)
 	// d3.event.y vs d3.event.pageY are different on Firefox & Chromium:
 	// tooltipShow() Y= 351 pageY= 443
 		.style("top", `${d3.event.pageY - tooltip.node().offsetHeight / 2}px`)
 		.style("left", `${d3.event.x + 12}px`)
-		.style("z-index", 100)
+//		.style("z-index", 100)
 		.html(html)
+		.transition()
+		.duration(500)
+		.style("opacity", 1)
 		;
 	}
 
 
 // ----------------------------------------------------------------------------
-function tooltipHide() {
+function tooltipHide(d) {
 d3.select("#tooltip")
+	.transition()
+	.duration(500)
 	.style("opacity", 0)
+	;
+
+d3.select(`#cc${d.properties.countryCode}`)
+	.style("stroke", "black")
+	.style("stroke-width", "0px")
 	;
 	}
 

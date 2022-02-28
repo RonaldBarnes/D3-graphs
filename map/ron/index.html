@@ -42,6 +42,35 @@
 		</div>
 
 			<div>
+				<label for="scale">Map scaling:</label>
+				<input type="range" id="scale" list="scaleList"
+					min="50" max="500" step=25>
+				<datalist id="scaleList">
+					<option value="50" label="50%">
+					<option value="75">
+					<option value="100" label="100%">
+					<option value="125">
+					<option value="150" label="150%">
+					<option value="175">
+					<option value="200" label="200%">
+					<option value="225">
+					<option value="250" label="250%">
+					<option value="275">
+					<option value="300" label="300%">
+					<option value="325">
+					<option value="350" label="350%">
+					<option value="325">
+					<option value="350" label="350%">
+					<option value="375">
+					<option value="400" label="400%">
+					<option value="425">
+					<option value="450" label="450%">
+					<option value="475">
+					<option value="500" label="500%">
+				</datalist>
+			</div>
+
+			<div>
 				<label for="hrot">Map horizontal rotation:</label>
 				<input type="range" id="hrot" list="tickmarksH"
 					min="-180" max="180" step=45>
@@ -75,34 +104,6 @@
 			</div>
 
 		<div id="map-sub-selects">
-			<div>
-				<label for="scale">Map scaling:</label>
-				<input type="range" id="scale" list="scaleList"
-					min="50" max="500" step=25>
-				<datalist id="scaleList">
-					<option value="50" label="50%">
-					<option value="75">
-					<option value="100" label="100%">
-					<option value="125">
-					<option value="150" label="150%">
-					<option value="175">
-					<option value="200" label="200%">
-					<option value="225">
-					<option value="250" label="250%">
-					<option value="275">
-					<option value="300" label="300%">
-					<option value="325">
-					<option value="350" label="350%">
-					<option value="325">
-					<option value="350" label="350%">
-					<option value="375">
-					<option value="400" label="400%">
-					<option value="425">
-					<option value="450" label="450%">
-					<option value="475">
-					<option value="500" label="500%">
-				</datalist>
-			</div>
 			<div class="parallels">
 				Projection parallels: (lattitudinal centre)
 				<select id="parallels">
