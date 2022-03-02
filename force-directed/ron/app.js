@@ -15,21 +15,15 @@ let padding = {
 	bottom: 50,
 	};
 // Node / circle radius increases as multiple of pixelsPerCommittee:
+// It's said that AREA should be used, not radius...
 let pixelsPerCommittee = 10;
-let {width, height} = getSize();
-//width = d3.select("#graph").attr("width") - d3.select("#checkboxes").attr("width");
-// Checkboxes are ⅓ screen width (33vw), give rest to SVG:
-width = width / 3 * 2;
-// console.log(`WIDTH: ${width}`);
 
-d3.select("#graph")
-	.append("svg")
-		.attr("width", width)
-		.attr("height", height)
-	;
-let svg = d3.select("svg");
+// Both width & height will be re-caluclated once checkboxes populated, for
+// responsive design & to make best use of remaining space for SVG
+// Assign arbitrary values for now:
+let [width, height] = [400, 400];	// getSize();
 
-
+let svg;
 let nodes;
 let nodeGroup;
 let links;
@@ -53,7 +47,6 @@ let parties =
 		}
 	];
 let partyScale = d3.scaleOrdinal()
-//	.domain( ["D", "R", "I"] )
 	.domain( parties.map( p => p.code) )
 	.range( ["blue", "red", "grey"] )
 	;
@@ -74,6 +67,7 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 	// filter memberships (===1) and assign header/committee names to array:
 	let committees = headers.slice(2).filter( h => d[h] === "1");
 	//
+	if (committees.length === 0) console.log("NO COMMITTEES", d);
 	return {
 		name: d.name,
 		party: d.party,
@@ -88,10 +82,30 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 
 
 
+	// Create checkboxes first, now that data is read & formatted, this
+	// allows for SVG to be sized responsively dependent upon remaining space:
+	//
+	// Pass all columns except first 2 (skip 0 & 1, start at 2):
+	// But, ONLY the headers, not data.
+	// "columns" from d3.csv: returns rows and a columns object with headers.
+	createCheckBoxes(nodes.columns.slice(2));
+
+	// Get fresh width value taking into account checkboxes div:
+	width = getWidth();
+	height = getHeight();
+	// console.log(`new WIDTH: ${width}, HEIGHT: ${height}`);
+
+	d3.select("#graph")
+		.append("svg")
+			.attr("width", width)
+			.attr("height", height)
+		;
+	svg = d3.select("svg");
 
 
 
 
+	// Links go first, else they have "z-index" placing them ABOVE nodes!
 	linkGroup = svg.append("g")
 		.attr("id", "linkGroup")
 		.classed("links", true)
@@ -106,20 +120,19 @@ d3.csv("./senate_committee_data.csv", function(d,i,headers) {
 			)
 		.force("collision-avoidance",
 			d3.forceCollide().radius( function(d) {
-//				return d.committees.length * pixelsPerCommittee
-return nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
+				return nodes.find(n => n.name === d.name).committees.length
+					* pixelsPerCommittee;
 				})
 			)
 		.force("centre",
-//			d3.forceCenter( width/2 + padding.left, height / 2 + padding.top)
 			d3.forceCenter( width/2, height / 2)
 			)
 		.force("links", d3.forceLink(links)
 			.distance( d => {
 			// Spread out distance of senators on multiple committees for legibility:
-				let count1 = d.source.committees.length;
-				let count2 = d.target.committees.length;
-				return 20 * Math.max(count1, count2);
+				let count1 = d.source.committees.length * pixelsPerCommittee;
+				let count2 = d.target.committees.length * pixelsPerCommittee;
+				return 10 * Math.max(count1, count2);
 				}) // end .distance
 			.id( d => d.name)
 			)	// end forceLink
@@ -130,22 +143,22 @@ return nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
 					.attr("y1", d => d.source.y)
 					.attr("x2", d => d.target.x)
 					.attr("y2", d => d.target.y)
-			.attr("title", function(d) {
-// console.log("linkUpdate.enter() d:", d);
-return d.source.name + " " + d.target.name
-})
+					// Title is mostly useless on lines except maybe debugging.
+					// Might be nice for mouse-over events though?
+					.attr("title", function(d) {
+						// console.log("linkUpdate.enter() d:", d);
+						return d.source.name + " " + d.target.name
+						})
 				;
 			nodeGroup
 				.selectAll("circle")
+					// Constrain circles leaving SVG: the centres stick at boundaries:
 					.attr("cx", d => d.x > width ? width : (d.x < 0 ? 0 : d.x) )
 					.attr("cy", d => d.y > height ? height : (d.y < 0 ? 0 : d.y) )
 				;
 			})	// end "on tick"
+	// Generate graph:
 	updateGraph(nodes,links);
-	// Pass all columns except first 2 (skip 0 & 1, start at 2):
-	// But, ONLY the headers, not data.
-	// "columns" from d3.csv: returns rows and a columns object with headers.
-	createCheckBoxes(nodes.columns.slice(2));
 	});	// end d3.csv
 
 
@@ -164,21 +177,36 @@ return d.source.name + " " + d.target.name
 // ----------------------------------------------------------------------------
 function updateGraph(nodeData, linkData)
 	{
-	let nodeUpdate = nodeGroup
+	// If called on window.resize, can't pass data without invoking this
+	// function. For now, use this fix 'til relocated window.resize listener:
+	if (nodeData === undefined || linkData === undefined)
+		{
+		nodeData = d3.select("#nodeGroup").selectAll("circle").data();
+		linkData = d3.select("#linkGroup").selectAll("line").data();
+		}
+
+	// Refresh size:
+	width = getWidth();
+	height = getHeight();
+
+	d3.select("svg")
+		.attr("width", width)
+		.attr("height", height)
+		;
+
+
+	let nodeUpdate = d3.select("#nodeGroup")
 		.selectAll("circle")
 		.data(nodeData, d => d.name)
 		;
 
 	nodeUpdate
 		.exit()
+			// Shrink 'til disappeared:
 			.transition()
 			.duration(250)
 			.delay( (d,i) => i * 25)
-			// Shrink 'til disappeared:
-			.attr("r", function(d) {
-// console.log("EXIT() d:", d);
-				return 0;
-				})
+			.attr("r", 0)
 			.remove()
 		;
 
@@ -189,10 +217,14 @@ function updateGraph(nodeData, linkData)
 				.transition()
 				.duration(500)
 				.delay((d,i) => i * 10)
-//				.attr("r", d => d.committees.length * pixelsPerCommittee)
+				// Set size as function of ALL committees, not just ones value=checked:
+				// .attr("r", d => d.committees.length * pixelsPerCommittee)
 				.attr("r", d =>
-nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
-)
+					// Node circles should reflect ALL committee memberships, NOT just
+					// those whose checkbox value=checked!
+					nodes.find(n => n.name === d.name).committees.length
+					* pixelsPerCommittee
+					)
 				.transition()
 				.duration(500)
 				.attr("fill", d => partyScale(d.party))
@@ -214,7 +246,7 @@ nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
 
 	nodeUpdate
 		.merge(nodeUpdate)
-/*
+		/*
 				// Including transition here makes d3.drag() fail below?!?
 				// d3.v4.js:754 Uncaught Error: unknown type: mousedown
 				// All permutations of transitions fail: radius, fill, ...
@@ -224,11 +256,14 @@ nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
 			.delay((d,i) => i * 10)
 			.attr("r", d => d.committees.length * 10)
 			.attr("fill", "black")
-*/
-//				.attr("r", d => d.committees.length * pixelsPerCommittee)
+		*/
+				// Node circles should reflect ALL committee memberships, NOT just
+				// those whose checkbox value=checked!
+				// .attr("r", d => d.committees.length * pixelsPerCommittee)
 				.attr("r", d =>
-nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
-)
+					nodes.find(n => n.name === d.name).committees.length
+						* pixelsPerCommittee
+					)
 				.attr("fill", d => partyScale(d.party))
 				.attr("stroke", "white")
 				.attr("stroke-width", 3)
@@ -243,7 +278,7 @@ nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
 				.on("mouseout touchend", tooltipHide)
 		;
 
-	let linkUpdate = linkGroup
+	let linkUpdate = d3.select("#linkGroup")
 		.selectAll("line")
 		.data(linkData, d => d.source.name + " " + d.target.name)
 		;
@@ -256,12 +291,27 @@ nodes.find(n => n.name === d.name).committees.length * pixelsPerCommittee
 	linkUpdate
 		.enter()
 			.append("line")
-			.attr("title", function(d) {
-// console.log("linkUpdate.enter() d:", d);
-return d.source.name + " " + d.target.name
-})
+				.on("mousemove touchstart", tooltipShow)
+				.on("mouseout touchend", tooltipHide)
+					// Title is mostly useless on lines except maybe debugging.
+					// Might be nice for mouse-over events though?
+				.attr("title", function(d) {
+					// console.log("linkUpdate.enter() d:", d);
+					return d.source.name + " " + d.target.name
+					})
 		;
-	}
+	// When re-sizing SVG, nodes don't re-draw: add jiggle:
+	// Oops. This causes never-ending movement, not quite right:
+	// Kind of hypnotic; like looking at astronomy simulations
+	// simulation.alphaTarget(0.25).restart();
+	// Nice info here:
+	// https://github.com/d3/d3-force/blob/main/README.md#simulation_nodes
+	simulation
+		.force("centre", d3.forceCenter( width/2, height/2))
+			.alpha(0.5)
+			.restart()
+		;
+	}	// end updateGraph()
 
 
 
@@ -324,6 +374,7 @@ function createCheckBoxes(committees)
 	console.log(`createCheckBoxes()`);
 
 	let boxes = d3.select("#checkboxes")
+		.attr("height", height)
 		.selectAll("div")
 		.data(committees)
 		.enter()
@@ -444,6 +495,19 @@ function dragEnd(d)
 
 
 
+//
+// For responsive design, listen to page resizing:
+window.addEventListener("resize", updateGraph);
+// Adding params here causes immediate invokation.
+// Could move this listener to end of d3.csv, but put the following code
+// inside updateGraph() so it's always avaiable to that function:
+//		d3.select("#nodeGroup").selectAll("circle").data(),
+//		d3.select("#linkGroup").selectAll("line").data()
+//		)
+//	);
+
+
+
 
 
 
@@ -458,11 +522,11 @@ d3.select("body")
 
 // ----------------------------------------------------------------------------
 function tooltipShow(d) {
-// console.log("DATA:", d);
-/*
- console.log("tooltipShow() X=", d3.event.x, "pageX=", d3.event.pageX,
-	"Y=", d3.event.y, "pageY=", d3.event.pageY);
-*/
+	// console.log("DATA:", d);
+	/*
+ 	console.log("tooltipShow() X=", d3.event.x, "pageX=", d3.event.pageX,
+		"Y=", d3.event.y, "pageY=", d3.event.pageY);
+	*/
 
 	let tooltip = d3.select("#tooltip");
 	let posTop;
@@ -487,19 +551,31 @@ function tooltipShow(d) {
 		posLeft = d3.event.x + 12;
 		}
 
-	let html = `<ul><li>Name: ${d.name} (${d.party})</li> `
-		+ `<li>Committees:</li><ul> `
-//		+ `<li>Committees selected to display:</li><ul> `
-		;
+	// Make tooltips for lines as well as nodes:
+	let html;
+	if (d.source === undefined)
+		{
+		// Node / circle:
+		html = `<ul><li>Name: ${d.name} (${d.party})</li> `
+			+ `<li>Committees:</li><ul> `
+			;
+		// Tooltip should show ALL committee memberships, NOT just ones selected
+		// via checkboxes:
+		nodes.find(n => n.name === d.name).committees.map( c => {
+			html += `<li>${c}</li>`;
+			})
+			;
+		html += "</ul></ul>";
+		}
+	else
+		{
+		// Line:
+		html = `<h4>Connection</h4> `
+			+ `<ul><li>${d.source.name} (${d.source.party})</li> `
+			+ `<li>${d.target.name} (${d.target.party})</li></ul>`
+			;
+		}
 
-	// Tooltop should show ALL committee memberships, NOT just ones selected
-	// via checkboxes:
-	nodes.find(n => n.name === d.name).committees.map( c => {
-//	d.committees.map( c => {
-		html += `<li>${c}</li>`;
-		})
-		;
-	html += "</ul></ul>";
 
 	tooltip
 		// d3.event.y vs d3.event.pageY are different on Firefox & Chromium:
@@ -549,17 +625,65 @@ function tooltipShow(d) {
 function tooltipHide() {
 	d3.select("#tooltip")
 		.transition()
-		.duration(500)
-		.style("top", `-200px`)
+		.duration(250)
+		.style("top", "-150px")
 		.transition()
 		.duration(500)
 		.style("opacity", 0)
+		// Move tooltip to top-left: resizing window smaller can leave its
+		// location off-screen, such that large scroll bar(s) appear:
+		.style("top", 0)
+		.style("left", 0)
 		;
 	}
 
 
 
+// ----------------------------------------------------------------------------
+function getWidth()
+	{
+	width = document.documentElement.clientWidth
+	// THIS gives issues with scrollbar widths overlooked:  window.innerWidth
+	// [window.innerWidth, document.documentElement.clientWidth] =
+	// [1039, 1024]
+		- d3.select("#checkboxes").property("clientWidth")
+		// leave some padding / margin, say, twice the body's margin (8px default):
+		- parseInt(d3.select("body").style("margin-left"))
+		- parseInt(d3.select("body").style("margin-right")) * 2
+		;
+	}
 
+// ----------------------------------------------------------------------------
+function getHeight()
+	{
+	// Should SVG just be made square? Node dispersal is elongated...
+	// This makes it same height as checkboxes (which set height on container):
+	// height = d3.select("#container").property("clientHeight");
+	//
+	// This will make it window height - header / title or checkboxes height:
+	height = Math.max(
+		window.innerHeight
+			- d3.select("#title").property("clientHeight")
+			// .style() gives results with "px" suffix, parseInt those away:
+			- parseInt(d3.select("#title").style("margin-top"))
+			- parseInt(d3.select("#title").style("margin-bottom"))
+			- parseInt(d3.select("body").style("margin-top"))
+			- parseInt(d3.select("body").style("margin-bottom"))
+			,
+		d3.select("#checkboxes").property("clientHeight")
+		);
+	return height;
+	}
+
+
+
+
+
+
+
+
+// ----------------------------------------------------------------------------
+// Remaining code is "template" and unused here... Specialized versions above
 // ----------------------------------------------------------------------------
 function getSize() {
 	let width = getPageWidth();
@@ -594,18 +718,21 @@ function getPageWidth() {
 
 // ----------------------------------------------------------------------------
 function getPageHeight() {
+	// return d3.select("#container").property("clientHeight");
 	// GREAT example on stackoverflow:
-	// https://stackoverflow.com/questions/3437786/get-the-size-of-the-screen-cur>
+	// https://stackoverflow.com/questions/3437786/get-the-size-of-the-screen-cu
 	let tmpHeight = window.innerHeight
 	|| document.documentElement.clientHeight
 	|| window.screen.availHeight
 	|| document.body.clientHeight
 	;
 	// Shave some space off height for radios & make an even number:
+	/*
 	tmpHeight = Math.floor(
 		(tmpHeight - padding.top - padding.bottom) / 100)
 		* 100
 		;
+	*/
 	// If screen too small (i.e. mobile landscape): set minimum size:
 	// console.log(`getPageHeight() HEIGHT: ${tmpHeight}`);
 	return tmpHeight < 400 ? 400 : tmpHeight;

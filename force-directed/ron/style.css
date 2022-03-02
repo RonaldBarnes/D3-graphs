@@ -1,7 +1,16 @@
 *,
 *::before,
 *::after {
+	font-family: hack-regular;
 	box-sizing: border-box;
+	}
+
+@font-face {
+	font-family: "Open Sans";
+	src: url("hack-regular.woff2") format("woff2")
+	/* ,
+		url("/fonts/OpenSans-Regular-webfont.woff") format("woff");
+	*/
 	}
 
 svg {
@@ -9,17 +18,25 @@ svg {
 	outline: 1px solid red;
 	}
 
-#graph {
+#container {
 	display: flex;
 	flex-direction: row;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: 0.5rem;
 	justify-content: space-between;
+	align-items: flex-start;
 	}
 
+#graph {
+	/*
+		Setting width is important: use up all space after checkboxes created
+		so d3.select("#graph").property("width") returns > 0 (or null):
+	*/
+	width: 100%;
+	}
 
 #checkboxes {
-	width: 33vw;
+/*	width: 33vw; */
 	outline: 1px solid green;
 	}
 #checkboxes > div:nth-of-type(odd) {
