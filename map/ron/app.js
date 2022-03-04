@@ -464,10 +464,19 @@ function getPageWidth() {
 	// Shrink it to leave some space around sides and make it
 	// an even number:
 	// Also, add padding.left & .right back to SVG so "width" is INSIDE padding
+/*
 	divWidth = Math.floor(
 		(divWidth - padding.left - padding.right) / 100 )
 		* 100
 		;
+*/
+	// On mobile, initial width is only 200: That cannot be correct.
+/*
+d3.select("#title")
+	.text(`width: ${divWidth}`)
+	;
+*/
+//	divWidth = Math.max( divWidth, 450);
 	return divWidth;
 	}
 

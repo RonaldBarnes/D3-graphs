@@ -1,8 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=2">
   <meta charset="UTF-8">
   <title>D3 Map</title>
+	<link	rel="prefect"
+				url="Roboto-Regular.ttf"
+				as="font"
+				type="font/truetype"
+				crossorigin="anonymous"
+				/>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +19,7 @@
     xmlns="http://www.w3.org/2000/svg"
     id="map">
   </svg -->
-	<h1 id="title">World map showing... data</h1>
+	<h1 id="title">World map, showing... data</h1>
 	<div id="graph"></div>
 
 	<div class="selections">
@@ -27,7 +34,7 @@
 		<div id="colour-legend"></div>
 
 		<div class="projection">
-			<h3>With added map projections:</h3>
+			<h3>Bonus map projections:</h3>
 		  <select id="projection">
 	    	<option value="albers">Albers</option>
 	    	<option value="azimuthEqualArea">Azimuth Equal Area</option>
@@ -54,17 +61,15 @@
 					<option value="175">
 					<option value="200" label="200%">
 					<option value="225">
-					<option value="250" label="250%">
+					<option value="250">
 					<option value="275">
-					<option value="300" label="300%">
+					<option value="300"><!-- label="300%"-->
 					<option value="325">
-					<option value="350" label="350%">
-					<option value="325">
-					<option value="350" label="350%">
+					<option value="350">
 					<option value="375">
-					<option value="400" label="400%">
+					<option value="400"><!-- label="400%"-->
 					<option value="425">
-					<option value="450" label="450%">
+					<option value="450">
 					<option value="475">
 					<option value="500" label="500%">
 				</datalist>

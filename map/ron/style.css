@@ -1,7 +1,19 @@
 *,
 *::before,
-*::after {
+*::after,
+body {
+	font-family: "Roboto Regular";
+	/* font-family: "Ubuntu Regular";	*/
 	box-sizing: border-box;
+	}
+
+@font-face {
+	font-family: "Roboto Regular";
+	src: url("Roboto-Regular.ttf") format("truetype");
+	}
+@font-face {
+	font-family: "Ubuntu Regular";
+	src: url("Ubuntu-Regular.ttf") format("truetype");
 	}
 
 svg {
@@ -33,7 +45,8 @@ datalist {
 #colour-legend {
 	display: flex;
 	flex-grow: 1;
-	width: 50vw;
+	max-width: 75vw;
+	min-width: 50vw;
 	outline: 1px solid cornflowerblue;
 	}
 #colour-legend div {
@@ -99,10 +112,18 @@ path {
 
 
 
+@media (orientation:portrait) {
+	
+	#colour-legend {
+		flex-wrap: wrap;
+		flex-grow: 0;
+		}
+	}
 /*
 	Text was illegible - too small - on mobile.
 	Set sizes larger at hiDPI:
 */
+/*
 @media (resolution >= 2dppx) {
 
 	#tooltip, .tooltip, #years, #year, .legend, #colour-legend {
@@ -123,3 +144,4 @@ path {
 		}
 
 	}
+*/
