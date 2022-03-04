@@ -136,6 +136,13 @@ function changeProjection(proj = d3.select("#projection").property("value") )
 	{
 	console.log(`changeProjection() -> ${proj}`);
 
+	let {width, height} = getSize();
+
+	d3.select("svg")
+		.attr("width", width)
+		.attr("height", height)
+		;
+
 	let scale = d3.select("#scale").property("value");
 	// console.log(`changeProjection() scale=${scale}`);
 
@@ -358,6 +365,12 @@ function setColour(val) {
 
 
 
+//
+// For responsive design, listen to page resizing:
+window.addEventListener("resize", changeProjection);
+
+
+
 
 // ----------------------------------------------------------------------------
 // Add Tooltip div:
@@ -374,7 +387,7 @@ d3.select("body")
 // ----------------------------------------------------------------------------
 function tooltipShow(d) {
 	// console.log("DATA:", d.properties);
-console.log("DATA:", d);
+	// console.log("DATA:", d);
 	// console.log("tooltipShow() Y=", d3.event.y, "pageY=", d3.event.pageY);
 
 	let tooltip = d3.select("#tooltip");
@@ -448,7 +461,7 @@ function getSize() {
 	height = Math.min(width, height);
 	width = Math.min(width, height);
 	*/
-	// console.log(`WIDTH: ${width}	HEIGHT: ${height}`);
+	console.log(`WIDTH: ${width}	HEIGHT: ${height}`);
 	return {
 	width: width,
 	// Add padding to height so room for title:
@@ -459,7 +472,16 @@ function getSize() {
 
 // ----------------------------------------------------------------------------
 function getPageWidth() {
-	let divWidth = window.innerWidth;
+
+	// [d3.select("body").property("clientWidth"), window.innerWidth]
+	// [ 877, 905 ]
+	// BUT THE SVG IS 889px, causing SCROLLING?!?
+//	let divWidth = window.innerWidth
+	let divWidth = d3.select("body").property("clientWidth")
+		- parseInt(d3.select("body").style("margin-left"))
+		- parseInt(d3.select("body").style("margin-right"))
+		;
+
 	//
 	// Shrink it to leave some space around sides and make it
 	// an even number:
