@@ -185,14 +185,36 @@ function updateGraph(nodeData, linkData)
 		linkData = d3.select("#linkGroup").selectAll("line").data();
 		}
 
+	// ALL THIS RE-SIZING HACKING IS UGLY. I'M SORRY...
+	//
+	// stupid attempt to get legit size on window.resize:
+	// window.innerWidth can be 1800+, not good
+	d3.select("svg")
+//		.transition()
+//		.duration(250)
+		.attr("width", 0)
+		.attr("height", 0)
+		;
+	// Checkboxes too, FFS: they change size by margin-left & right when
+	// SVG is resized to 0:
+	let checkboxWidth = d3.select("#checkboxes").property("clientWidth");
+	d3.select("#checkboxes")
+		.attr("width", 0)
+		;
+	//
 	// Refresh size:
 	width = getWidth();
 	height = getHeight();
-
+	//
 	d3.select("svg")
 		.attr("width", width)
 		.attr("height", height)
 		;
+	d3.select("#checkboxes")
+		.attr("width", checkboxWidth)
+		;
+
+
 
 
 	let nodeUpdate = d3.select("#nodeGroup")
@@ -506,9 +528,13 @@ window.addEventListener("resize", updateGraph);
 //		)
 //	);
 
-
-
-
+/*
+d3.select("#devicePixelRatio")
+	.append("text")
+	.text(`devicePixelRatio: ${window.devicePixelRatio}`)
+//	.style("font-size", "3rem")
+	;
+*/
 
 
 // ----------------------------------------------------------------------------
@@ -533,23 +559,6 @@ function tooltipShow(d) {
 	let posLeft;
 	// Default position for tooltip is to right of node circle:
 	let tooltipClass;
-	// Use different class if node circle is to right side of graph:
-	// We're given the x-offset as a position within window, need to remove
-	// width of checkboxes div to get approximate position within SVG:
-	if (d3.event.x - d3.select("#checkboxes").property("clientWidth") > width / 2)
-		{
-		// Show tooltip to LEFT of node circle:
-		tooltipClass = "tooltipLeft";
-		posTop = d3.event.pageY - tooltip.node().offsetHeight / 2;
-		posLeft = d3.event.x - tooltip.node().offsetWidth - 12;
-		}
-	else
-		{
-		// Show tooltip to RIGHT of node circle:
-		tooltipClass = "tooltipRight";
-		posTop = d3.event.pageY - tooltip.node().offsetHeight / 2;
-		posLeft = d3.event.x + 12;
-		}
 
 	// Make tooltips for lines as well as nodes:
 	let html;
@@ -577,8 +586,38 @@ function tooltipShow(d) {
 		}
 
 
+	// This also had to be separated to make the transition work...
+	//
+	// Append html to tooltip BEFORE calculating position, since position is
+	// dependent on tooltip div size!
 	tooltip
-		// d3.event.y vs d3.event.pageY are different on Firefox & Chromium:
+		.html(html)
+		;
+
+
+	// Use different class if node circle is to right side of graph:
+	// We're given the x-offset as a position within window, need to remove
+	// width of checkboxes div to get approximate position within SVG:
+	if (d3.event.x
+			- document.querySelector("#graph").offsetLeft
+			> width / 2)
+		{
+		// Show tooltip to LEFT of node circle:
+		tooltipClass = "tooltipLeft";
+		posTop = d3.event.pageY - tooltip.node().offsetHeight / 2;
+		posLeft = d3.event.x - tooltip.node().offsetWidth - 12;
+		}
+	else
+		{
+		// Show tooltip to RIGHT of node circle:
+		tooltipClass = "tooltipRight";
+		posTop = d3.event.pageY - tooltip.node().offsetHeight / 2;
+		posLeft = d3.event.x + 12;
+		}
+
+
+	tooltip
+		// d3.event.y vs d3.event.pageY are different on Firefox & Chromium?:
 		// tooltipShow() Y= 351 pageY= 443
 		//
 		// TRANSITION on position caused tooltip to stick to bottom-left corner
@@ -613,10 +652,6 @@ function tooltipShow(d) {
 		.duration(150)
 		.style("opacity", 1)
 		;
-	// This also had to be separated to make the transition work...
-	tooltip
-		.html(html)
-		;
 	}
 
 
@@ -632,8 +667,8 @@ function tooltipHide() {
 		.style("opacity", 0)
 		// Move tooltip to top-left: resizing window smaller can leave its
 		// location off-screen, such that large scroll bar(s) appear:
-		.style("top", 0)
-		.style("left", 0)
+		.style("top", "0px")
+		.style("left", "0px")
 		;
 	}
 
@@ -641,16 +676,46 @@ function tooltipHide() {
 
 // ----------------------------------------------------------------------------
 function getWidth()
+	// This was a nightmare to set up for responsive.
+	// Not quite a quick & dirty solution, more a slow and filthy one.
 	{
-	width = document.documentElement.clientWidth
-	// THIS gives issues with scrollbar widths overlooked:  window.innerWidth
+	let checkboxWidth = d3.select("#checkboxes").property("clientWidth");
+
+	// THIS gives issues with scrollbar widths overlooked:
+	// width = window.innerWidth
+	//
 	// [window.innerWidth, document.documentElement.clientWidth] =
 	// [1039, 1024]
-		- d3.select("#checkboxes").property("clientWidth")
-		// leave some padding / margin, say, twice the body's margin (8px default):
-		- parseInt(d3.select("body").style("margin-left"))
-		- parseInt(d3.select("body").style("margin-right")) * 2
-		;
+	//
+	// IF on mobile and flex-direction === column, then use full page width:
+	// i.e. if left side of SVG is after right side of checkboxes, subtract
+	// checkboxes' width from available space:
+	if (document.querySelector("#graph").offsetLeft < checkboxWidth)
+		{
+		// Column display hence equal width:
+		width = checkboxWidth;
+		// HOWEVER - checkbox width CHANGES after the SVG takes on its value FFS!
+		// Once the SVG is shrunk to 0x0 before calling this function,
+		// #checkboxes shrinks by 15px (probably 16 with rounding...)
+		// document.body margins?
+		// Not sure why, it's crazy-making...
+		// Will this fix it?:
+		//
+		// Never mind: CSS on SVG was: margin: 0 auto;
+		// NOPE, need to handle body margins even with CSS SVG margin: 0;
+		width = width
+			// These fuck up on Firefox mobile, but required on Chromium desktop:
+			- parseInt(d3.select("body").style("margin-left"))
+			- parseInt(d3.select("body").style("margin-right"))
+		}
+	else
+		{
+		width = d3.select("#graph").property("clientWidth")
+//			- parseInt(d3.select("body").style("margin-left"))
+//			- parseInt(d3.select("body").style("margin-right"))
+			;
+		}
+	return width;
 	}
 
 // ----------------------------------------------------------------------------

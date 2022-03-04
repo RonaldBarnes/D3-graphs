@@ -1,20 +1,27 @@
 *,
 *::before,
 *::after {
-	font-family: hack-regular;
+	font-family: "Ubuntu Regular";
+/*	font-family: "Hack Regular";	*/
+/*	font-family: hack-regular;	*/
 	box-sizing: border-box;
 	}
 
 @font-face {
-	font-family: "Open Sans";
-	src: url("hack-regular.woff2") format("woff2")
-	/* ,
-		url("/fonts/OpenSans-Regular-webfont.woff") format("woff");
-	*/
+	font-family: "Hack Regular";
+	src: url("hack-regular.woff2") format("woff2");
+	}
+@font-face {
+	font-family: "Roboto Slab", serif;
+	src: url("RobotoSlab_Regular.ttf") format("truetype");
+	}
+@font-face {
+	font-family: "Ubuntu Regular", sans-serif;
+	src: url("Ubuntu-Regular.ttf") format("truetype");
 	}
 
 svg {
-	margin: 0 auto;
+	margin: 0;
 	outline: 1px solid red;
 	}
 
@@ -22,9 +29,13 @@ svg {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
-	gap: 0.5rem;
 	justify-content: space-between;
 	align-items: flex-start;
+/*
+	display: grid;
+	grid
+*/
+	gap: 0.5rem;
 	}
 
 #graph {
@@ -38,6 +49,11 @@ svg {
 #checkboxes {
 /*	width: 33vw; */
 	outline: 1px solid green;
+	border: 1px solid lightgrey;
+	}
+#checkboxes > div {
+	padding: 5px;
+	border: 1px solid lightgrey;
 	}
 #checkboxes > div:nth-of-type(odd) {
 	background: hsl(211, 50%, 90%);
@@ -48,6 +64,7 @@ svg {
 
 h2, h3, h4 {
 	text-align: center;
+	font-family: "Roboto Slab";
 	}
 
 .links line {
@@ -89,6 +106,7 @@ h2, h3, h4 {
 	line-height: 1.5em;
 	padding-right: 2rem;
 	font-size: 1.25rem;
+	/*	font-family: hack-regular;	*/
 	}
 
 
@@ -114,4 +132,58 @@ h2, h3, h4 {
 	border-left-color: green;
 	/* offset by ½ width of border element to centre it, top: 50% is START */
 	margin-top: -12px;
+	}
+
+
+
+
+
+/* @media all and (orientation:!landscape) { */
+@media all and (orientation:portrait) {
+
+	#container {
+		flex-direction: column;
+		width: 100%;
+		}
+	#checkboxes {
+		order: 10;
+		width: 100%;
+		}
+	#graph {
+		order: 5;
+		width: 100%;
+		}
+	#checkboxes {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		}
+	#checkboxes h4 {
+		grid-column-start: 1;
+		grid-column-end: 3;
+		}
+	}
+
+
+
+
+@media (min-resolution: 100dpi) and (orientation: landscape) {
+
+	#container {
+		flex-direction: column;
+		width: 100%;
+		}
+	#checkboxes {
+		order: 10;
+		width: 100%;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		}
+	#graph {
+		order: 5;
+		width: 100%;
+		}
+	#checkboxes h4 {
+		grid-column-start: 1;
+		grid-column-end: 3;
+		}
 	}
