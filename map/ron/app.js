@@ -19,13 +19,49 @@ let {width, height} = getSize();
 let countryData;
 let geoDataAll;
 
+/*
+let zoom = d3.zoom()
+	.on("zoom", handleZoom(d3.event)
+	);
+
+function handleZoom(e)
+	{
+console.log("ZOOM:", e);
+if (e === undefined || e === null) return;
+	d3.select("svg")
+		.attr("transform", e.transform)
+		;
+	}
+*/
+
 d3.select("#graph")
 	.append("svg")
-	.attr("id", "map")
 	.attr("width", width)
 	.attr("height", height)
 	.style("background", "royalblue")
+	.append("g")
+	.attr("id", "map")
 	;
+let xyz = d3.select("#map")
+/*
+	.append("g")
+	.call(d3.zoom().on("zoom", function(e) {
+		console.log(".on ZOOM e=", e);
+		xyz.attr("transform", e.transform);
+		}));
+*/
+	.call(d3.zoom()
+		.scaleExtent([.25, 10])
+		.translateExtent( [ [-width/2, -height/2], [width, height] ])
+		.on("zoom", function(e) {
+			console.log(d3.event);
+			xyz.attr("transform", d3.event.transform)
+			})
+		);
+
+
+
+
 
 
 d3.queue()
@@ -69,7 +105,7 @@ d3.queue()
 		var path = d3.geoPath()
 								 .projection(projection);
 
-		d3.select("svg")
+		d3.select("#map")
 			.selectAll(".country")
 			.data(geoDataAll)
 			.enter()
@@ -80,7 +116,6 @@ d3.queue()
 				.attr("d", path)
 				.attr("id", d => `cc${d.properties.countryCode}`)
 			;
-
 
 //	changeProjection("mercator");
 
@@ -334,6 +369,7 @@ function setColour(val) {
 		.ease(d3.easeBackIn)
 		.attr("fill", d => {
 			var data = d.properties[val];
+			// Make "unknown" countries black-ish:
 			return data ? scaleColour(data) : "#111";	// "#ccc";
 		});
 
@@ -346,7 +382,10 @@ function setColour(val) {
 			legendFontColour(i)
 			;
 */
-	for (let i = 0; i < scaleColour.domain()[1]; i += scaleColour.domain()[1]/10)
+	// Should there be 10 gradients? On mobile it requires vertical legend...
+	for (let i = 0;
+			i < scaleColour.domain()[1];
+			i += scaleColour.domain()[1]/10)
 		{
 		legend += `<div style="background: ${scaleColour(i)}; `
 			+ `color: ${legendFontColour(i)};">`
@@ -354,11 +393,21 @@ function setColour(val) {
 		}
 	// console.log(`LEGEND: ${legend}`);
 
-	d3.select("#colour-legend")
+	let l = d3.select("#colour-legend");
+
+	l
+//		.transition()
+//		.duration(50)
+		.style("opacity", 0)
+		;
+
+	l
 		.html(legend)
 		.transition()
 		.duration(750)
+		.style("opacity", 1)
 		;
+
 	}	// end setColour
 
 
@@ -390,6 +439,12 @@ function tooltipShow(d) {
 	// console.log("DATA:", d);
 	// console.log("tooltipShow() Y=", d3.event.y, "pageY=", d3.event.pageY);
 
+	let posTop;
+	let posLeft;
+	// Default position for tooltip is to right of node circle:
+	let tooltipClass;
+
+
 	let tooltip = d3.select("#tooltip");
 
 	let
@@ -397,10 +452,12 @@ function tooltipShow(d) {
 		country, fertilityRate, medianAge, population, populationDensity
 		} = d.properties;
 
-d3.select(`#cc${d.properties.countryCode}`)
-	.style("stroke", "black")
-	.style("stroke-width", "2px")
-	;
+
+	// Outline country being hovered over:
+	d3.select(`#cc${d.properties.countryCode}`)
+		.style("stroke", "black")
+		.style("stroke-width", "1px")
+		;
 
 	let html;
 	if (Object.keys(d.properties).length === 0)
@@ -419,15 +476,42 @@ d3.select(`#cc${d.properties.countryCode}`)
 			+ "</ul>"
 		}
 
+
+
+	// Use different class if node circle is to right side of graph:
+	// We're given the x-offset as a position within window, need to remove
+	// width of checkboxes div to get approximate position within SVG:
+	if (d3.event.x > width / 2)
+		{
+		// Show tooltip to LEFT of node circle:
+		tooltipClass = "tooltipLeft";
+		posTop = d3.event.pageY - tooltip.node().offsetHeight / 2;
+		posLeft = d3.event.x - tooltip.node().offsetWidth - 12;
+		}
+	else
+		{
+		// Show tooltip to RIGHT of node circle:
+		tooltipClass = "tooltipRight";
+		posTop = d3.event.pageY - tooltip.node().offsetHeight / 2;
+		posLeft = d3.event.x + 12;
+		}
+
+
+
+
 	tooltip
-	// d3.event.y vs d3.event.pageY are different on Firefox & Chromium:
-	// tooltipShow() Y= 351 pageY= 443
-		.style("top", `${d3.event.pageY - tooltip.node().offsetHeight / 2}px`)
-		.style("left", `${d3.event.x + 12}px`)
-//		.style("z-index", 100)
+//		.style("top", `${d3.event.pageY - tooltip.node().offsetHeight / 2}px`)
+		.style("top", `${posTop}px`)
+//		.style("left", `${d3.event.x + 12}px`)
+		.style("left", `${posLeft}px`)
+		// Classes accumulate: remove all previous ones:
+		.classed("tooltipLeft", false)
+		.classed("tooltipRight", false)
+		// Now, reapply only the current one based on position of mouse cursor:
+		.classed(tooltipClass, true)
 		.html(html)
 		.transition()
-		.duration(500)
+		.duration(200)
 		.style("opacity", 1)
 		;
 	}
@@ -437,7 +521,7 @@ d3.select(`#cc${d.properties.countryCode}`)
 function tooltipHide(d) {
 d3.select("#tooltip")
 	.transition()
-	.duration(500)
+	.duration(300)
 	.style("opacity", 0)
 	;
 

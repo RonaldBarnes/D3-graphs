@@ -75,7 +75,9 @@ path {
 	stroke-width: 0.25px;
 	}
 
-#tooltip, .tooltip {
+
+
+#tooltip {
 	opacity: 0;
 	position: absolute;
 	/*
@@ -90,14 +92,14 @@ path {
 	/* padding: 15px; */
 	}
 
-.tooltip ul li {
+#tooltip ul li {
 	/* Reduce spacing on data in tooltip: */
 	line-height: 1.5em;
 	padding-right: 2rem;
 	font-size: 1.25rem;
 	}
 
-.tooltip::before {
+.tooltipRight::before {
 	content: "";
 	position: absolute;
 	top: 50%;
@@ -105,6 +107,19 @@ path {
 	left: -24px;
 	border: 12px solid transparent;
 	border-right-color: red;
+	/* offset by ½ width of border element to centre it, top: 50% is START */
+	margin-top: -12px;
+	}
+
+/* Place tooltip to LEFT of mouse pointer: */
+.tooltipLeft::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	/* Bring pointer outside left-side-tooltip via border*2 */
+	right: -24px;
+	border: 12px solid transparent;
+	border-left-color: red;
 	/* offset by ½ width of border element to centre it, top: 50% is START */
 	margin-top: -12px;
 	}
