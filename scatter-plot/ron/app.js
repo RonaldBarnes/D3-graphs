@@ -1,10 +1,10 @@
 
 console.log("\n\n",
-"--------------------------------------\n",
-"© ron@ronaldbarnes.ca 2022\n",
-"--------------------------------------\n",
-"\n\n"
-);
+	"--------------------------------------\n",
+	"© ron@ronaldbarnes.ca 2022\n",
+	"--------------------------------------\n",
+	"\n\n"
+	);
 
 
 
@@ -398,6 +398,8 @@ function makeGraph(year) {
 	d3.select("#x-axis")
 		.attr("transform",
 			`translate(0, ${height + padding.top + padding.bottom / 4})`)
+		.transition()
+		.duration(1000)
 		.call(xAxis
 			.tickSize(-height)
 			.tickSizeOuter(0)
@@ -412,6 +414,8 @@ function makeGraph(year) {
 
 	d3.select("#y-axis")
 		.attr("transform", `translate(${padding.left}, 0)`)
+		.transition()
+		.duration(1000)
 		.call(yAxis
 			.tickSize(-width)
 			.tickSizeOuter(0)
@@ -423,11 +427,15 @@ function makeGraph(year) {
 		;
 
 	d3.select("#title")
+		.style("opacity", 0)
 		.attr("x", width / 2 + padding.left)
 		.attr("y", 0)	//padding.top / 2)
 		.attr("dy", "1.5rem")
 		// .text(`Methane vs co2 Emissions per Capita for ${year}`)
 		.text(`GHG Emissions for ${year}`)
+		.transition()
+		.duration(1000)
+		.style("opacity", 1)
 		;
 
 
@@ -528,7 +536,11 @@ function setYearLabel(year = minYear) {
 	// Range selector:
 	// Initialize upon loading:
 	d3.select("#year")
+		.style("opacity", 0)
 		.text(`Displaying year ${year}`)
+		.transition()
+		.duration(1000)
+		.style("opacity", 1)
 		;
 	d3.select("#minYear")
 		.text(minYear)
@@ -693,7 +705,7 @@ function getPageWidth() {
 	// Shrink it to leave some space around sides and make it
 	// an even number:
 	// Also, add padding.left & .right back to SVG so "width" is INSIDE padding
-	divWidth = Math.floor( 
+	divWidth = Math.floor(
 		(divWidth - padding.left - padding.right) / 100 )
 		* 100
 		;
@@ -703,18 +715,23 @@ function getPageWidth() {
 // ----------------------------------------------------------------------------
 function getPageHeight() {
 	// GREAT example on stackoverflow:
-	// https://stackoverflow.com/questions/3437786/get-the-size-of-the-screen-cur>
+	// https://stackoverflow.com/questions/3437786/get-the-size-of-the-screen-current-web-page-and-browser-window
 	let tmpHeight = window.innerHeight
 	|| document.documentElement.clientHeight
 	|| window.screen.availHeight
 	|| document.body.clientHeight
 	;
-	// Shave some space off height for radios & make an even number:
-	tmpHeight = Math.floor(
-		(tmpHeight - padding.top - padding.bottom) / 100 - 2)
+	// Remove space for SVG-internal padding:
+	tmpHeight = tmpHeight - padding.top - padding.bottom;
+	// Quantize the height in multiples of 100:
+	tmpHeight = Math.floor(tmpHeight / 100
+		// Shave some space off height for radios & legend:
+		- 3)
+		// Multiply by 100 to finish quantization:
 		* 100
 		;
+	// console.log(`getPageHeight() HEIGHT: ${tmpHeight}`);
+	//
 	// If screen too small (i.e. mobile landscape): set minimum size:
-console.log(`getPageHeight() HEIGHT: ${tmpHeight}`);
 	return tmpHeight < 400 ? 400 : tmpHeight;
 	}
