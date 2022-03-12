@@ -35,7 +35,7 @@ svg {
 #colour-legend div {
 	flex-grow: 1;
 	flex-shrink: 1;
-	padding: 1rem;
+	padding: 0.25rem 0.5rem;
 	}
 
 /* Entire range selector + labels: */

@@ -354,7 +354,7 @@ function getPageHeight() {
 		|| document.body.clientHeight
 		;
 	// Shave some space off height for radios & make an even number:
-	tmpHeight = Math.floor(tmpHeight / 100 - 2) * 100;
+	tmpHeight = Math.floor(tmpHeight / 100 - 3) * 100;
 	// If screen too small (i.e. mobile landscape): set minimum size:
 	return tmpHeight < 400 ? 400 : tmpHeight;
 	}
