@@ -26,6 +26,10 @@ svg {
 	stroke-dasharray: 10,5;
 	}
 
+g .tick text {
+	font-size: 1rem;
+	}
+
 #colour-legend {
 	display: flex;
 	/*
@@ -80,6 +84,7 @@ svg {
 /* Axis labels: */
 .axis-label {
 	font-weight: bold;
+	font-size: 1.25rem;
 	}
 
 #tooltip, .tooltip {

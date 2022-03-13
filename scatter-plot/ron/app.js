@@ -291,7 +291,7 @@ svg
 	.attr("text-anchor", "middle")
 	.classed("axis-label", true)
 	.attr("id", "x-axis-label")
-	.text("co2 emissions (kt per person)")
+	.text("CO₂ emissions (kt per person)")
 	;
 
 
@@ -409,7 +409,7 @@ function makeGraph(year) {
 	d3.select("#x-axis-label")
 	.attr("x", width / 2 + padding.left)
 	.attr("y", height + padding.top + padding.bottom)
-	.attr("dy", "-1em")
+	.attr("dy", "-0.5em")
 		;
 
 	d3.select("#y-axis")
@@ -423,7 +423,7 @@ function makeGraph(year) {
 		;
 	d3.select("#y-axis-label")
 		.attr("x", -height / 2 - padding.top)
-		.attr("y", "1.50em")
+		.attr("y", "1.0em")
 		;
 
 	d3.select("#title")
