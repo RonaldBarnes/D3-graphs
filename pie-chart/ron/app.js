@@ -1,6 +1,7 @@
-// write your code here!
+//
 // vsCodium here, via "fish" ssh file system on KDE!
-
+//
+// BUT, everything coded in nano: faster 'til I learn vsCode...
 
 console.log("\n\n",
 	"--------------------------------------\n",
@@ -11,28 +12,30 @@ console.log("\n\n",
 
 
 
-let padding = 50;
+
+
+let padding = {
+	top: 50,
+	right: 10,
+	bottom: 10,
+	left: 10
+	};
+
 
 let {width, height} = getSize();
 
-/*
-let padding = {
-	top: 50,
-	right: 50,
-	bottom: 75,
-	left: 100
-	};
-*/
-let barPadding = 1;
-
-
 
 let [minYear, maxYear] = d3.extent(birthData, d => d.year);
+
 // Initialize the chart to a median value, looks nicer:
 let startYear = minYear + (maxYear - minYear) / 2;
 
+// Use a set for continent data as it has built-in de-duplication:
 let continents = new Set();
-birthData.forEach(d => continents.add(d.continent));
+// Here's where we map over input data, gathering unique continent codes:
+birthData.map( d => { continents.add(d.continent) } );
+
+// Map codes to names:
 let continentsNames = {
 	AF: "Africa",
 	AS: "Asia",
@@ -43,12 +46,15 @@ let continentsNames = {
 	};
 
 
+// Colour scale for continents, both pie slices and legend:
 let colourScale = d3.scaleOrdinal()
 	.domain( continents )
 	.range(d3.schemeCategory10)
 	;
 
 
+
+// Add an SVG to the div with ID of "graph":
 d3.select("#graph")
 	.append("svg")
 		.attr("width", width)
@@ -56,17 +62,24 @@ d3.select("#graph")
 		.style("outline", "1px solid red")
 	;
 
+
+
 // Pie charts centre on 0,0 by default, so make a group and centre it,
 // which will become the pie chart later:
 let svg = d3.select("svg");
 svg
 	.append("g")
 	.attr("id", "graph-centre")
-	.attr("transform",
-		`translate( ${width / 2},
-			${height / 2 + padding})`)
-	.classed("chart", true)
-	// .style("outline", "1px solid green")
+/*
+		.attr("width", width - padding.left - padding.right)
+		.attr("height", height - padding.top - padding.bottom)
+		.attr("transform",
+			`translate( ${width / 2}, ${height / 2})`)
+*/
+	// .classed("chart", true)
+	// Show the internal padding: green box touches outer circle edge:
+	// Helps with alignment, not needed in "production":
+	.style("outline", "1px solid green")
 	;
 
 
@@ -77,7 +90,7 @@ d3.select("input")
 	.property("max", maxYear)
 	.property("value", startYear)
 	.on("input", function() {
-		makeGraph( Number(d3.event.target.value));
+		updateGraph( Number(d3.event.target.value));
 		})
 	;
 
@@ -97,26 +110,71 @@ d3.select("#groupContinents")
 		let groupContinents =
 			d3.select("#groupContinents").property("checked");
 		console.log("CHECKBOX changed:", groupContinents);
-		makeGraph(Number(d3.select("input").property("value")));
+		updateGraph(Number(d3.select("input").property("value")));
 		})
 	;
 
 
 
-// Initialize graph:
-makeGraph(startYear);
 
-function makeGraph(year) {
-	let yearData = birthData.filter( d => d.year === year);
+
+
+// Initialize graph:
+updateGraph(startYear);
+
+// Make or UPDATE graph -------------------------------------------------------
+function updateGraph(year)
+	{
+	if (typeof year !== "number")
+		{
+		// Window was resized, etc. so year is the event and we need to
+		// extract the actual year elsewhere:
+		// Maybe just skip the passed parameter entirely?
+		year = Number(d3.select("#inputYear").property("value") );
+		}
+	console.log(`updateGraph() year:`, year);
+
+	let yearData = birthData.filter( d => (d.year === year) );
 	setYearLabel(year)
+
+
+	// Responsive Design: if page changes size / orientation, redraw:
+	let {width, height} = getSize();
+console.log(`updateGraph() width: ${width}  height: ${height}`);
+
+
+
+	// Re-size graph on browser re-size, rotate, etc.
+	d3.select("svg")
+		.attr("width", width)
+		.attr("height", height)
+		;
+
+	// Re-centre graph on re-size, rotate, etc.
+	d3.select("#graph-centre")
+		.attr("width", width - padding.left - padding.right)
+		.attr("height", height - padding.top - padding.bottom)
+		.attr("transform",
+			`translate( ${width / 2}, ${height / 2 + padding.top / 2})`)
+		;
+
+	// Adjust title positioning (on re-size, rotate, etc.)
+	d3.select("#title")
+		.attr("x", width / 2 + padding.left)
+		;
+
+
+
+
+
+	// Should we sort the slices by continent, then births?
 	let groupContinents =
 		d3.select("#groupContinents").property("checked");
 
-	let {width, height} = getSize();
 
 	// The beginning of a pie chart:
 	let arcs = d3.pie()
-		.value(d => d.births)
+		.value(d => (d.births))
 		// Sort by continent, grouping sections by colour:
 		.sort(function (a, b) {
 			// console.log(`Group CONTINENTS:`,groupContinents)
@@ -129,85 +187,63 @@ function makeGraph(year) {
 					}
 				}
 			return b.births - a.births;
-			})
+			})	// end sort
+		// Gap between segments: (CAUSES WEIRD ARITFACTS ON TRANSITIONS!)
+		// .padAngle(0.01)
 			// this is the arcs.value() I think, poor explanation in lesson:
 		(yearData)
-		// Doesn't work: "arcs.padAngle is not a function"
-		// padAngle(0.25)
 		;
+
+
 
 	let path = d3.arc()
-		.outerRadius( width / 2 - padding)
+		.outerRadius( width / 2 - padding.left - padding.right)
 		// Positive innerRadius gives an annulus (donut):
-		.innerRadius(width / 6)
-		// pie.padAngle doesn't seem to work on d3.pie (above)
-		// pie.padAngle: set padding between arcs
-		// arc.padAngle: set padding between arcs (again?)
-		// arc.cornerRadius: round arc corners
-		// .padAngle(0.0075)
-		.cornerRadius(5)
+		.innerRadius(width / 7)
+		// cornerRadius: round arc corners
+		.cornerRadius(10)
 		;
 
-	let update = d3.select(".chart")
-		.selectAll(".arc")
-		.data(arcs)
+	let update = d3.select("#graph-centre")
+		.selectAll("path")
+		.data(arcs
+			// key function to bind data to specific slices based on country:
+			,
+			(d,i) => (d.region)
+			)
 		;
 	update
-		.exit(function(d) { console.log(".exit()") })
-		.remove()
-		;
-	update
-		.enter(function(d) {console.log(".enter()") })
+		// Enter / create / append new DOM items to match number of data items:
+		.enter()
 		.append("path")
-			.classed("arc", true)
+			.attr("stroke", "black")
+//			.classed("arc", true)
+			.attr("opacity", 0.5)
+		// Handle new and updated DOM items:
 		.merge(update)
+			.attr("d", path)
 			.transition()
 			.duration(1000)
-			.delay((d, i) => i * 50)
+			.delay((d, i) => i * 10)
+			.attr("opacity", 1)
 			.attr("fill", d => colourScale(d.data.continent))
-			.attr("stroke", "black")
-			.attr("d", path)
+			.attr("id", d => (d.region))
+		;
+	update
+		// Remove DOM items no longer bound to data:
+		.exit()
+			.transition().duration(500)	// .delay( (d,i) => (i * 50))
+			.attr("opacity", 0)
+			.remove()
+		;
+
 	setToolTip()
-	}
-	;
+	};	// end updateGraph
+// Make or UPDATE graph -------------------------------------------------------
 
 
 
 
-
-// Responsive Design: if page changes size / orientation, redraw:
-function updateGraph() {
-	console.log("updateGraph()");
-
-	let {width, height} = getSize();
-
-	d3.select("svg")
-		.attr("width", width)
-		.attr("height", height)
-		;
-
-	d3.select("#graph-centre")
-		.attr("transform",
-			`translate( ${width / 2},
-				${height / 2 + padding})`)
-/*
-		.attr("x", width / 2 + padding)
-		.attr("y", height / 2 + padding)
-*/
-		;
-
-
-	d3.select("#title")
-		.attr("x", width / 2)
-		;
-
-	// clear chart for re-sizing:
-	// Not necessary if wanting transition from old to new size:
-	//d3.selectAll(".arc").remove();
-
-	makeGraph(Number(d3.select("input").property("value")));
-
-	}
 
 
 //
@@ -222,12 +258,20 @@ d3.select("#devicePixelRatio")
 .text(`devicePixelRatio: ${window.devicePixelRatio}`)
 .style("font-size", "3rem")
 ;
-*/
+
+THE devicePixelRatio CAN BE REPLACED: in html, add:
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 if (window.devicePixelRatio > 1)
 	{
 	padding = padding * 2;
 	}
+*/
 
+
+
+// Put focus on year selector for keyboard navigation:
+document.getElementById("inputYear").focus();
 
 
 
@@ -283,7 +327,7 @@ d3.select("body")
 
 
 function setYearLabel(year = minYear) {
-	console.log(`YEAR: ${year}`)
+	// console.log(`setYearLabel() YEAR: ${year}`)
 	// Range selector:
 	// Initialize upon loading:
 	d3.select("#year")
@@ -371,6 +415,6 @@ function getSize() {
 	return {
 		width: width,
 		// Add padding to height so room for title:
-		height: height + padding,
+		height: height + padding.top,
 		}
 	}
