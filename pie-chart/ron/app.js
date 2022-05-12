@@ -70,13 +70,6 @@ let svg = d3.select("svg");
 svg
 	.append("g")
 	.attr("id", "graph-centre")
-/*
-		.attr("width", width - padding.left - padding.right)
-		.attr("height", height - padding.top - padding.bottom)
-		.attr("transform",
-			`translate( ${width / 2}, ${height / 2})`)
-*/
-	// .classed("chart", true)
 	// Show the internal padding: green box touches outer circle edge:
 	// Helps with alignment, not needed in "production":
 	.style("outline", "1px solid green")
