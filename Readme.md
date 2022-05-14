@@ -16,7 +16,9 @@ Upgrades over course material:
 * Collision avoidance (no overlapping circles)
 * Edge detection (circles cannot drift outside SVG boundaries)
 * Legend for circle colours
-* Transitions: when circles are removed, they shrink and disappear
+* Transitions:
+	* when circles are removed, they shrink and disappear
+	* when circles are re-added, they grow and take on final colour
 * ...
 * Bug fix: Removing committees from selection should **not** removed that
 committee from the tool tip: the senator is still a member of, say, 3
