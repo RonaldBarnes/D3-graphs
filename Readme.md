@@ -23,3 +23,6 @@ Upgrades over course material:
 * Bug fix: Removing committees from selection should **not** removed that
 committee from the tool tip: the senator is still a member of, say, 3
 committees even if only one of them is displayed.
+
+
+Live site: http://bclug.ca:8008/d3/force-directed/ron/
