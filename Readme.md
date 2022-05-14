@@ -1,0 +1,11 @@
+### D3.js Pie Chart
+
+As part of an Advanced Web Dev Boot Camp course at Udemy.com, we made a pie
+chart.
+
+
+Mine is enhanced with "responsive design", a colour legend for the continents,
+a label on the year input selector (range), transitions, etc.
+
+
+I did omit the central chart of births by quarter though.
