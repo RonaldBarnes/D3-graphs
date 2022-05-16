@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=2">
+  <meta charset="UTF-8">
+  <title>D3 Map</title>
+	<link	rel="prefect"
+				url="Roboto-Regular.ttf"
+				as="font"
+				type="font/truetype"
+				crossorigin="anonymous"
+				/>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- svg
+    version="1.1"
+    baseProfile="full"
+    xmlns="http://www.w3.org/2000/svg"
+    id="map">
+  </svg -->
+	<h1 id="title">World map, showing... data</h1>
+	<div id="graph"></div>
+
+	<div class="selections">
+		<div>
+		  <select id="population">
+	  	  <option value="population">Population</option>
+	    	<option value="populationDensity">Population Density /km²</option>
+		    <option value="medianAge">Median Age</option>
+	  	  <option value="fertilityRate">Fertility Rate</option>
+		  </select>
+		</div>
+		<div id="colour-legend"></div>
+
+		<div class="projection">
+			<h3>Bonus map projections:</h3>
+		  <select id="projection">
+	    	<option value="albers">Albers</option>
+	    	<option value="azimuthEqualArea">Azimuth Equal Area</option>
+	    	<option value="azimuthEqualDistant">Azimuth Equal Distance</option>
+	    	<option value="conicConformal">Conic Conformal</option>
+	    	<option value="equiRectangular">Equirectangular</option>
+	    	<option value="gnomonic">Gnomonic</option>
+	  	  <option value="mercator" default>Mercator</option>
+	    	<option value="naturalEarth">Natural Earth</option>
+	    	<option value="orthographic">Orthographic</option>
+		  </select>
+		</div>
+
+			<div>
+				<label for="scale">Map scaling: (scroll wheel over countries works too)</label>
+				<input type="range" id="scale" list="scaleList"
+					min="50" max="500" step=25>
+				<datalist id="scaleList">
+					<option value="50" label="50%">
+					<option value="75">
+					<option value="100" label="100%">
+					<option value="125">
+					<option value="150" label="150%">
+					<option value="175">
+					<option value="200" label="200%">
+					<option value="225">
+					<option value="250">
+					<option value="275">
+					<option value="300"><!-- label="300%"-->
+					<option value="325">
+					<option value="350">
+					<option value="375">
+					<option value="400"><!-- label="400%"-->
+					<option value="425">
+					<option value="450">
+					<option value="475">
+					<option value="500" label="500%">
+				</datalist>
+			</div>
+
+			<div>
+				<label for="hrot">Map horizontal rotation:</label>
+				<input type="range" id="hrot" list="tickmarksH"
+					min="-180" max="180" step=45>
+				<datalist id="tickmarksH">
+					<option value="-180" label="-180°">
+					<option value="-135">
+					<option value="-90"> <!-- label="-90°" -->
+					<option value="-45">
+					<option value="0" label="0°">
+					<option value="45">
+					<option value="90"> <!-- label="90°" -->
+					<option value="135">
+					<option value="180" label="180°">
+				</datalist>
+			</div>
+			<div>
+				<label for="vrot">Map vertical rotation:</label>
+				<input type="range"  id="vrot" list="tickmarksV"
+					min="-180" max="180" step=45>
+				<datalist id="tickmarksV">
+					<option value="-180" label="-180°">
+					<option value="-135">
+					<option value="-90"> <!-- label="-90°" -->
+					<option value="-45">
+					<option value="0" label="0°">
+					<option value="45">
+					<option value="90"> <!-- label="90°" -->
+					<option value="135">
+					<option value="180" label="180°">
+				</datalist>
+			</div>
+
+		<div id="map-sub-selects">
+			<div class="parallels">
+				Projection parallels: (lattitudinal centre)
+				<select id="parallels">
+					<option value="0">-10,10</option>
+					<option value="5">0,10</option>
+					<option value="15">10,20</option>
+					<option value="25">10,20</option>
+					<option value="35">30,40</option>
+					<option value="45">40,50</option>
+					<option value="55">50,60</option>
+				</select>
+			</div>
+		</div>
+	</div>
+
+  <script src="https://d3js.org/d3.v4.js"></script>
+  <script src="https://unpkg.com/topojson@3"></script>
+  <script src="app.js"></script>
+</body>
+</html>
