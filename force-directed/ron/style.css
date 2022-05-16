@@ -1,0 +1,189 @@
+*,
+*::before,
+*::after {
+	font-family: "Ubuntu Regular";
+/*	font-family: "Hack Regular";	*/
+/*	font-family: hack-regular;	*/
+	box-sizing: border-box;
+	}
+
+@font-face {
+	font-family: "Hack Regular";
+	src: url("hack-regular.woff2") format("woff2");
+	}
+@font-face {
+	font-family: "Roboto Slab", serif;
+	src: url("RobotoSlab_Regular.ttf") format("truetype");
+	}
+@font-face {
+	font-family: "Ubuntu Regular", sans-serif;
+	src: url("Ubuntu-Regular.ttf") format("truetype");
+	}
+
+svg {
+	margin: 0;
+	outline: 1px solid red;
+	}
+
+#container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+	align-items: flex-start;
+/*
+	display: grid;
+	grid
+*/
+	gap: 0.5rem;
+	}
+
+#graph {
+	/*
+		Setting width is important: use up all space after checkboxes created
+		so d3.select("#graph").property("width") returns > 0 (or null):
+	*/
+	width: 100%;
+	}
+
+#checkboxes {
+/*	width: 33vw; */
+	outline: 1px solid green;
+	border: 1px solid lightgrey;
+	}
+#checkboxes > div {
+	padding: 5px;
+	border: 1px solid lightgrey;
+	}
+#checkboxes > div:nth-of-type(odd) {
+	background: hsl(211, 50%, 90%);
+	}
+#checkboxes > div:nth-of-type(even) {
+	background: hsl(111, 50%, 90%);
+	}
+
+h2, h3, h4 {
+	text-align: center;
+	font-family: "Roboto Slab";
+	}
+
+.links line {
+	stroke: #999;
+	stroke-opacity: 0.6;
+	}
+
+#legend {
+	display: flex;
+	flex-direction: row;
+	flex-grow: 1;
+	padding: 5px;
+	color: white;
+	}
+#legend div {
+	flex-grow: 1;
+	padding: 5px;
+	text-align: center;
+	border: 1px solid black;
+	}
+
+#tooltip, .tooltip {
+	opacity: 0;
+	position: absolute;
+	/*
+	Bars still lie below axis ticks: okay, but affects tooltip
+	z-index: 1000;
+	*/
+	background-color: cornflowerblue;
+	color: black;
+	pointer-events: none;
+	border: 2px solid black;
+	border-radius: 8px;
+	padding: 0rem;
+	}
+
+#tooltip ul li {
+	/* Reduce spacing on data in tooltip: */
+	line-height: 1.5em;
+	padding-right: 2rem;
+	font-size: 1.25rem;
+	/*	font-family: hack-regular;	*/
+	}
+
+
+.tooltipRight::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	/* Bring pointer outside left-side-tooltip via border*2 */
+	left: -24px;
+	border: 12px solid transparent;
+	border-right-color: green;
+	/* offset by ½ width of border element to centre it, top: 50% is START */
+	margin-top: -12px;
+	}
+/* Place tooltip to LEFT of node circle: */
+.tooltipLeft::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	/* Bring pointer outside right-side-tooltip via border*2 */
+	right: -24px;
+	border: 12px solid transparent;
+	border-left-color: green;
+	/* offset by ½ width of border element to centre it, top: 50% is START */
+	margin-top: -12px;
+	}
+
+
+
+
+
+/* @media all and (orientation:!landscape) { */
+@media all and (orientation:portrait) {
+
+	#container {
+		flex-direction: column;
+		width: 100%;
+		}
+	#checkboxes {
+		order: 10;
+		width: 100%;
+		}
+	#graph {
+		order: 5;
+		width: 100%;
+		}
+	#checkboxes {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		}
+	#checkboxes h4 {
+		grid-column-start: 1;
+		grid-column-end: 3;
+		}
+	}
+
+
+
+
+@media (min-resolution: 100dpi) and (orientation: landscape) {
+
+	#container {
+		flex-direction: column;
+		width: 100%;
+		}
+	#checkboxes {
+		order: 10;
+		width: 100%;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		}
+	#graph {
+		order: 5;
+		width: 100%;
+		}
+	#checkboxes h4 {
+		grid-column-start: 1;
+		grid-column-end: 3;
+		}
+	}
