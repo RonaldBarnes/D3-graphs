@@ -26,7 +26,7 @@ committees even if only one of them is displayed.
 
 
 ![Screenshot of Force-Directed Graph]
-(http://ronaldbarnes.ca:8008/d3/force-directed/ron/images/Force-Directed-½-size.png)
+(http://ronaldbarnes.ca:8008/d3/force-directed/ron/images/Force-Directed-screenshot-½-size.png)
 
 
 Live site: http://bclug.ca:8008/d3/force-directed/ron/
