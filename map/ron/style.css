@@ -48,6 +48,8 @@ datalist {
 	max-width: 75vw;
 	min-width: 50vw;
 	outline: 1px solid cornflowerblue;
+	/* Make text legible when contrast is poor */
+	text-shadow: 1px 1px black;
 	}
 #colour-legend div {
 	display: inline;

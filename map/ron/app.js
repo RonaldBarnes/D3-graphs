@@ -340,6 +340,10 @@ function changeProjection(proj = d3.select("#projection").property("value") )
 
 
 // ----------------------------------------------------------------------------
+// Change colours of countries when selector is changed:
+/*
+ * param1: string: value of population drop-down selector
+*/
 function setColour(val) {
 
 	var colorRanges = {
