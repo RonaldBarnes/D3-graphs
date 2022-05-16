@@ -15,3 +15,6 @@ I did omit the central chart of births by quarter though.
 
 
 Link to live demo http://bclug.ca:8008/test-git/d3/pie-chart/ron/.
+
+
+![Sample image](http://ron@ronaldbarnes.ca:8008/d3/pie-chart/ron/images/Pie Chart screenshot.png)
