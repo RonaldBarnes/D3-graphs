@@ -20,5 +20,5 @@ over top-right circle (as one example).
 
 Live site link: http://ronaldbarnes.ca:8008/d3/scatter-plot/ron/
 
-![Screenshot](http://ronaldbarnes.ca:8008/d3/scatter-plot/ron/images/scatter-plot-screenshot-400px.png)
+![Screenshot](http://ronaldbarnes.ca:8008/d3/scatter-plot/ron/images/Scatter-Plot-screenshot-400px.png)
 
